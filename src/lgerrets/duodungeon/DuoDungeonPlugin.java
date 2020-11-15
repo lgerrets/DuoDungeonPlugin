@@ -2,6 +2,7 @@ package lgerrets.duodungeon;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 public class DuoDungeonPlugin extends JavaPlugin {
 	private static JavaPlugin instance;
@@ -19,6 +20,11 @@ public class DuoDungeonPlugin extends JavaPlugin {
     	configMgr = new ConfigManager(this);
     	DummyClass dummyClass = new DummyClass();
     	Bukkit.getPluginManager().registerEvents(dummyClass, DuoDungeonPlugin.getInstance());
+    }
+    
+    public static WorldEditPlugin getWorldEdit()
+    {
+    	return (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
     }
     
     // Fired when plugin is disabled
