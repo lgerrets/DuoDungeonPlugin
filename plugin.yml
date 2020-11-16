@@ -2,4 +2,12 @@ name: DuoDungeonPlugin
 main: lgerrets.duodungeon.DuoDungeonPlugin
 version: 1.0
 api-version: 1.13
+depend: [WorldEdit]
 commands:
+  dd:
+    description: Enter /dd start then /dd spawn
+    usage: /<command>
+permissions:
+  duodungeon.dd:
+    description: Gives a player access to /dd
+    default: op

@@ -3,6 +3,7 @@ package lgerrets.duodungeon;
 import java.io.File;
 import java.io.IOException;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -33,6 +34,7 @@ public class ConfigManager {
 
 		setDefaultIfNotSet(DDConfig, "verbose", 0);
 		setDefaultIfNotSet(DDConfig, "tile_size", 6);
+		setDefaultIfNotSet(DDConfig, "max_height", 20);
 		setDefaultIfNotSet(DDConfig, "world", "world");
 
 		ConfigurationSection gameConfig = setDefaultSectionIfNotSet(DDConfig, "Game");
@@ -70,7 +72,7 @@ public class ConfigManager {
 			do_save += 1;
 		}
 		else 
-			subsection = DDConfig.getConfigurationSection(path);
+			subsection = section.getConfigurationSection(path);
 		return subsection;
 	}
 	

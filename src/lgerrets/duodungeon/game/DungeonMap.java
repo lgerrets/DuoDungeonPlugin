@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.Material;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
@@ -16,13 +17,21 @@ import lgerrets.duodungeon.utils.Index2d.Direction;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.function.block.BlockReplace;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.function.pattern.BlockPattern;
+import com.sk89q.worldedit.function.pattern.Pattern;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldedit.world.block.BaseBlock;
+import com.sk89q.worldedit.world.block.BlockState;
+import com.sk89q.worldedit.world.block.BlockType;
 
 public class DungeonMap {
 	
@@ -30,9 +39,17 @@ public class DungeonMap {
 	private Coords3d dungeon_origin;
 	private Coords3d pastebin;
 	private int tile_size;
+	private int max_height;
 	private World world;
 	private com.sk89q.worldedit.world.World WEWorld;
 	private ArrayDeque<Piece> pieces;
+	
+	static public DungeonMap game = null;
+	
+	static public void InitializeDungeon()
+	{
+		game = new DungeonMap();
+	}
 	
 	public DungeonMap()
 	{
@@ -52,18 +69,22 @@ public class DungeonMap {
 				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
 				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
 				{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-		};
+		}; //15*21
 		ConfigurationSection origin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("dungeon_origin");
-		dungeon_origin = new Coords3d((int)origin_wp.get("X"),
-							  (int)origin_wp.get("Y"),
-							  (int)origin_wp.get("Z"));
+		dungeon_origin = new Coords3d(origin_wp.getInt("X"),
+							  origin_wp.getInt("Y"),
+							  origin_wp.getInt("Z"));
 		ConfigurationSection pastebin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("pastebin");
-		pastebin = new Coords3d((int)origin_wp.get("X"),
-								(int)origin_wp.get("Y"),
-								(int)origin_wp.get("Z"));
+		pastebin = new Coords3d(pastebin_wp.getInt("X"),
+								pastebin_wp.getInt("Y"),
+								pastebin_wp.getInt("Z"));
 		tile_size = (int)ConfigManager.DDConfig.get("tile_size");
-		world = Bukkit.getWorld((String)ConfigManager.DDConfig.get("World"));
-		WEWorld = (com.sk89q.worldedit.world.World) world;
+		max_height = (int)ConfigManager.DDConfig.get("max_height");
+		world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
+		// WEWorld = (com.sk89q.worldedit.world.World) (BukkitWorld) world;
+		WEWorld = new BukkitWorld(world);
+		pieces = new ArrayDeque<Piece>();
+		ClearArea();
 	}
 	
 	public void SpawnNewPiece()
@@ -87,6 +108,29 @@ public class DungeonMap {
 		
 		MoveTiles(piece_from, pastebins, false);
 		MoveTiles(pastebins, piece_dest, true);
+	}
+	
+	public void ClearArea()
+	{
+		BlockVector3 to = Index2dToBlockVector3(new Index2d(map.length, map[0].length), dungeon_origin);
+		to = to.add(0, max_height, 0);
+		CuboidRegion region = new CuboidRegion(WEWorld, dungeon_origin.toBlockVector3(), to);
+		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+		
+		System.out.println(region.getMaximumY());
+		System.out.println(region.getVolume());
+		System.out.println(region.getWidth());
+		System.out.println(region.getLength());
+		System.out.println(region.getHeight());
+		System.out.println(region.getPos1());
+		System.out.println(region.getPos2());
+		
+		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) { // get the edit session and use -1 for max blocks for no limit, this is a try with resources statement to ensure the edit session is closed after use
+			editSession.setBlocks(region, BukkitAdapter.adapt(Material.AIR.createBlockData()));
+		} catch (WorldEditException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void TryMovePiece(Piece piece, Direction d)
@@ -144,7 +188,7 @@ public class DungeonMap {
 			DuoDungeonPlugin.getWorldEdit().getWorldEdit().newEditSession(world);
 			//DuoDungeonPlugin.getWorldEdit().getWorldEdit().getEditSessionFactory().getEditSession(() world, -1);
 			*/
-			CuboidRegion region = new CuboidRegion((com.sk89q.worldedit.world.World) world, from[idx], BlockVector3.at(from[idx].getBlockX()+tile_size, from[idx].getBlockY()+20, from[idx].getBlockZ()+tile_size));
+			CuboidRegion region = new CuboidRegion(WEWorld, from[idx], BlockVector3.at(from[idx].getBlockX()+tile_size-1, from[idx].getBlockY()+max_height, from[idx].getBlockZ()+tile_size-1));
 			BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
 
 			try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) {
@@ -152,6 +196,8 @@ public class DungeonMap {
 			        editSession, region, clipboard, region.getMinimumPoint()
 			    );
 			    // configure here
+			    if (cut)
+			    	forwardExtentCopy.setSourceFunction(new BlockReplace(editSession, BukkitAdapter.adapt(Material.AIR.createBlockData())));
 			    Operations.complete(forwardExtentCopy);
 			} catch (WorldEditException e) {
 				// TODO Auto-generated catch block

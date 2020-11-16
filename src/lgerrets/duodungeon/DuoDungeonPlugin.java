@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
+import lgerrets.duodungeon.listeners.Commands;
+
 public class DuoDungeonPlugin extends JavaPlugin {
 	private static JavaPlugin instance;
 	public static JavaPlugin getInstance()
@@ -20,6 +22,7 @@ public class DuoDungeonPlugin extends JavaPlugin {
     	configMgr = new ConfigManager(this);
     	DummyClass dummyClass = new DummyClass();
     	Bukkit.getPluginManager().registerEvents(dummyClass, DuoDungeonPlugin.getInstance());
+    	this.getCommand("dd").setExecutor(new Commands());
     }
     
     public static WorldEditPlugin getWorldEdit()

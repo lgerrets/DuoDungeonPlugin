@@ -12,15 +12,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
 import lgerrets.duodungeon.ConfigManager;
+import lgerrets.duodungeon.game.DungeonMap;
 
 public class Commands implements CommandExecutor  {
 	
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
-    	if (label == "start")
+    	if (args.length == 0)
+    		return false;
+    	if (args[0].equalsIgnoreCase("start"))
     	{
-    		
+    		DungeonMap.InitializeDungeon();
+    	}
+    	else if (args[0].equalsIgnoreCase("spawn"))
+    	{
+    		DungeonMap.game.SpawnNewPiece();
+    	}
+    	else
+    	{
+    		return false;
     	}
 		return true;    	
     }

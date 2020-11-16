@@ -7,6 +7,11 @@ public class Coords3d {
 	public int y;
 	public int z; // z++ = go south
 	
+	public Coords3d()
+	{
+		this(0, 0, 0);
+	}
+	
 	public Coords3d(int X, int Y, int Z)
 	{
 		x = X;

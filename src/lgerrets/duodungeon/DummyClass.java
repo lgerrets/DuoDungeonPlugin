@@ -18,12 +18,12 @@ public class DummyClass implements Listener {
     @EventHandler(priority=EventPriority.HIGHEST)
     public void woodBreak(BlockBreakEvent event)
     {
-    	Material mat = event.getBlock().getType();
+    	/*Material mat = event.getBlock().getType();
     	if (mat == Material.DIRT && ConfigManager.DDConfig.getInt("verbose") > 0)
     	{
     		// Bukkit.broadcastMessage("Broadcast: A dirt was broken...");
     		for (Player p : Bukkit.getOnlinePlayers())
     			p.sendMessage("A dirt was broken!");
-    	}
+    	}*/
     }
 }

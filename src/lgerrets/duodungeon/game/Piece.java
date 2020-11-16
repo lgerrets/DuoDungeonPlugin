@@ -54,7 +54,9 @@ public class Piece {
 	
 	public static Coords3d tetris_o_origin;
 	{
-		ConfigurationSection tetris_o_section = ConfigManager.DDConfig.getConfigurationSection("tetris_o");
+		tetris_o_origin = new Coords3d();
+		ConfigurationSection waypoints = ConfigManager.DDConfig.getConfigurationSection("Waypoints");
+		ConfigurationSection tetris_o_section = waypoints.getConfigurationSection("tetris_o");
 		tetris_o_origin.x = tetris_o_section.getInt("X");
 		tetris_o_origin.y = tetris_o_section.getInt("Y");
 		tetris_o_origin.z = tetris_o_section.getInt("Z");
