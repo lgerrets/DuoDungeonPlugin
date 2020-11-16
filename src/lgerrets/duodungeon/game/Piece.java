@@ -1,7 +1,11 @@
 package lgerrets.duodungeon.game;
 
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -22,8 +26,9 @@ public class Piece {
 		T,
 		I,
 	}
+	static List<TetrisShape> all_shapes = Arrays.asList(TetrisShape.values());
 	
-	public static Map<TetrisShape, int[][]> occupations = new HashMap<>();
+	/*public static Map<TetrisShape, int[][]> occupations = new HashMap<>();
 	{
 		int[][] tmp_o = {{1,1},
 						 {1,1}};
@@ -50,38 +55,135 @@ public class Piece {
 		occupations.put(TetrisShape.T, tmp_t);
 		int[][] tmp_i = {{1},{1},{1},{1}};
 		occupations.put(TetrisShape.I, tmp_i);
-	}
+	}*/
 	
-	public static Coords3d tetris_o_origin;
+	public static Map<TetrisShape, Index2d[]> occupations = new EnumMap<TetrisShape, Index2d[]>(TetrisShape.class);
 	{
-		tetris_o_origin = new Coords3d();
-		ConfigurationSection waypoints = ConfigManager.DDConfig.getConfigurationSection("Waypoints");
-		ConfigurationSection tetris_o_section = waypoints.getConfigurationSection("tetris_o");
-		tetris_o_origin.x = tetris_o_section.getInt("X");
-		tetris_o_origin.y = tetris_o_section.getInt("Y");
-		tetris_o_origin.z = tetris_o_section.getInt("Z");
+		Index2d[] tmp_o = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(1,1)};
+		occupations.put(TetrisShape.O, tmp_o);
+
+		Index2d[] tmp_lr = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(2,0)};
+		occupations.put(TetrisShape.LR, tmp_lr);
+
+		Index2d[] tmp_l = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,1), new Index2d(2,1)};
+		occupations.put(TetrisShape.L, tmp_l);
+
+		Index2d[] tmp_z = new Index2d[] {new Index2d(0,1), new Index2d(1,0), new Index2d(1,1), new Index2d(2,0)};
+		occupations.put(TetrisShape.Z, tmp_z);
+
+		Index2d[] tmp_s = new Index2d[] {new Index2d(0,0), new Index2d(1,0), new Index2d(1,1), new Index2d(2,1)};
+		occupations.put(TetrisShape.S, tmp_s);
+
+		Index2d[] tmp_t = new Index2d[] {new Index2d(0,0), new Index2d(1,0), new Index2d(1,1), new Index2d(2,0)};
+		occupations.put(TetrisShape.T, tmp_t);
+
+		Index2d[] tmp_i = new Index2d[] {new Index2d(0,0), new Index2d(1,0), new Index2d(2,0), new Index2d(3,0)};
+		occupations.put(TetrisShape.I, tmp_i);
 	}
 	
+	private static Map<TetrisShape, Integer> n_templates = new HashMap<>();
+	{
+		n_templates.put(TetrisShape.O, ConfigManager.DDConfig.getInt("o_pieces"));
+		n_templates.put(TetrisShape.LR, ConfigManager.DDConfig.getInt("lr_pieces"));
+		n_templates.put(TetrisShape.L, ConfigManager.DDConfig.getInt("l_pieces"));
+		n_templates.put(TetrisShape.Z, ConfigManager.DDConfig.getInt("z_pieces"));
+		n_templates.put(TetrisShape.S, ConfigManager.DDConfig.getInt("s_pieces"));
+		n_templates.put(TetrisShape.T, ConfigManager.DDConfig.getInt("t_pieces"));
+		n_templates.put(TetrisShape.I, ConfigManager.DDConfig.getInt("i_pieces"));
+	}
+	private static int template_separator = ConfigManager.DDConfig.getInt("piece_separation");
 	
-	private Location clone_from;
-	private Location loc;
+	private static ConfigurationSection waypoints = ConfigManager.DDConfig.getConfigurationSection("Waypoints");
+	private static Random randomizer = new Random();
+	
+	private static Map<TetrisShape, Coords3d> template_origins = new HashMap<>();
+	{
+		template_origins.put(TetrisShape.O, Coords3d.FromWaypoint("tetris_o_origin"));
+		template_origins.put(TetrisShape.LR, Coords3d.FromWaypoint("tetris_lr_origin"));
+		template_origins.put(TetrisShape.L, Coords3d.FromWaypoint("tetris_l_origin"));
+		template_origins.put(TetrisShape.Z, Coords3d.FromWaypoint("tetris_z_origin"));
+		template_origins.put(TetrisShape.S, Coords3d.FromWaypoint("tetris_s_origin"));
+		template_origins.put(TetrisShape.T, Coords3d.FromWaypoint("tetris_t_origin"));
+		template_origins.put(TetrisShape.I, Coords3d.FromWaypoint("tetris_i_origin"));
+	}
+
 	private int rotation;
-	TetrisShape shape;
+	public TetrisShape shape;
 	public Index2d[] map_occupation;
+	public Index2d[] clone_from;
+	public Index2d map_origin;
+	private int rndTemplate;
 	
-	public Piece()
+	public Piece(TetrisShape tetris_shape, Index2d map_origin_)
+	{
+		map_origin = map_origin_;
+		shape = tetris_shape;
+		map_occupation = new Index2d[occupations.get(tetris_shape).length];
+		for (int i=0; i<occupations.get(tetris_shape).length; i+=1)
+			map_occupation[i] = occupations.get(tetris_shape)[i].add(map_origin);
+		clone_from = occupations.get(shape);
+		rndTemplate = randomizer.nextInt() % n_templates.get(shape);
+	}
+	
+	public Coords3d GetTemplateOrigin()
+	{
+		return template_origins.get(shape).add(0, 0, rndTemplate*(template_separator + DungeonMap.tile_size));
+	}
+	
+	public Piece() // OLD
 	{
 		
 	}
 	
-	public Piece(Location template, TetrisShape tetris_shape)
-	{
-		clone_from = template;
-		shape = tetris_shape;
-	}
-	
-	public void SetMapOccupation(Index2d[] map_occupation_)
+	public void SetMapOccupation(Index2d[] map_occupation_) // OLD
 	{
 		map_occupation = map_occupation_;
+	}
+	
+	public static Piece SpawnPiece(int[][] map)
+	{
+		TetrisShape shape = DrawTetrisShape();
+		boolean found = false;
+		Index2d idx = new Index2d(0,0);
+		while (!found)
+		{
+			idx.x = randomizer.nextInt() % map.length;
+			idx.z = randomizer.nextInt() % map[0].length;
+			found = MapIsFreeForTetrisShape(map, idx, shape);
+		}
+		Piece piece = new Piece(shape, idx);
+		return piece;
+	}
+	
+	public int[][] InitUpdateMap(int[][] map)
+	{
+		for (Index2d idx : map_occupation)
+			map[idx.x][idx.z] = 1;
+		return map;
+	}
+	
+	private static boolean MapIsFreeForTetrisShape(int[][] map, Index2d origin, TetrisShape shape)
+	{
+		System.out.println(occupations.containsKey(shape));
+		System.out.println(shape.toString());
+		for (TetrisShape key : occupations.keySet())
+		{
+			System.out.println(key.toString());
+		}
+		for (Index2d offset : occupations.get(shape))
+		{
+			Index2d idx = offset.add(origin);
+			if (map[idx.x][idx.z] > 0)
+				return false;
+		}
+		return true;
+	}
+	
+	private static TetrisShape DrawTetrisShape()
+	{
+		int idx = randomizer.nextInt() % all_shapes.size();
+		if (idx < 0)
+			idx = -idx;
+		return all_shapes.get(idx);
 	}
 }

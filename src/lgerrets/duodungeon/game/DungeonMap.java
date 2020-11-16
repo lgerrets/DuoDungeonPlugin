@@ -10,6 +10,7 @@ import org.bukkit.Material;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.Piece.TetrisShape;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
@@ -38,7 +39,7 @@ public class DungeonMap {
 	private int[][] map;
 	private Coords3d dungeon_origin;
 	private Coords3d pastebin;
-	private int tile_size;
+	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
 	private int max_height;
 	private World world;
 	private com.sk89q.worldedit.world.World WEWorld;
@@ -78,7 +79,6 @@ public class DungeonMap {
 		pastebin = new Coords3d(pastebin_wp.getInt("X"),
 								pastebin_wp.getInt("Y"),
 								pastebin_wp.getInt("Z"));
-		tile_size = (int)ConfigManager.DDConfig.get("tile_size");
 		max_height = (int)ConfigManager.DDConfig.get("max_height");
 		world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 		// WEWorld = (com.sk89q.worldedit.world.World) (BukkitWorld) world;
@@ -88,6 +88,28 @@ public class DungeonMap {
 	}
 	
 	public void SpawnNewPiece()
+	{
+		Piece piece = Piece.SpawnPiece(map);
+		piece.InitUpdateMap(map);
+		pieces.add(piece);
+		
+		int n_tiles = piece.map_occupation.length;
+		BlockVector3[] piece_from = new BlockVector3[n_tiles];
+		BlockVector3[] pastebins = new BlockVector3[n_tiles];
+		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
+		Coords3d template_origin = piece.GetTemplateOrigin();
+		for (int idx=0; idx<n_tiles; idx+=1)
+		{
+			piece_from[idx] = Index2dToBlockVector3(piece.clone_from[idx], template_origin);
+			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
+			piece_dest[idx] = Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin);
+		}
+		
+		MoveTiles(piece_from, pastebins, false);
+		MoveTiles(pastebins, piece_dest, true);
+	}
+	
+	public void SpawnNewPieceOld()
 	{
 		Piece piece = new Piece();
 		pieces.add(piece);
@@ -101,7 +123,7 @@ public class DungeonMap {
 		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
 		for (int idx=0; idx<n_tiles; idx+=1)
 		{
-			piece_from[idx] = Index2dToBlockVector3(piece.map_occupation[idx], Piece.tetris_o_origin);
+			//piece_from[idx] = Index2dToBlockVector3(piece.map_occupation[idx], Piece.template_origins.get(TetrisShape.O));
 			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
 			piece_dest[idx] = Index2dToBlockVector3(destination[idx], dungeon_origin);
 		}
@@ -117,14 +139,8 @@ public class DungeonMap {
 		CuboidRegion region = new CuboidRegion(WEWorld, dungeon_origin.toBlockVector3(), to);
 		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
 		
-		System.out.println(region.getMaximumY());
-		System.out.println(region.getVolume());
-		System.out.println(region.getWidth());
-		System.out.println(region.getLength());
-		System.out.println(region.getHeight());
-		System.out.println(region.getPos1());
-		System.out.println(region.getPos2());
-		
+		System.out.println("Cleared " + String.valueOf(region.getVolume()) + " Blocks for the dungeon");
+
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) { // get the edit session and use -1 for max blocks for no limit, this is a try with resources statement to ensure the edit session is closed after use
 			editSession.setBlocks(region, BukkitAdapter.adapt(Material.AIR.createBlockData()));
 		} catch (WorldEditException e) {

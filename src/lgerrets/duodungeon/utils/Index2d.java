@@ -40,4 +40,9 @@ public class Index2d {
 			return (((Index2d)obj).x == this.x) && (((Index2d)obj).z == this.z);
 		else return false;
 	}
+	
+	public Index2d add(Index2d obj)
+	{
+		return new Index2d(x+obj.x, z+obj.z);
+	}
 }
