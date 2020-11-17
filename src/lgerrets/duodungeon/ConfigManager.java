@@ -42,7 +42,7 @@ public class ConfigManager {
 		ConfigurationSection waypoints = setDefaultSectionIfNotSet(DDConfig, "Waypoints");
 		setDefaultWaypointIfNotSet(waypoints, "pastebin"); // origin of a free pastebin area (north-west corner) which extends to the south (z+)
 		setDefaultWaypointIfNotSet(waypoints, "dungeon_origin");
-		setDefaultIfNotSet(DDConfig, "piece_separation", 5); // empty space between 2 pieces of the same shape (in the north-south direction)
+		setDefaultIfNotSet(DDConfig, "piece_separation", 20); // in the north-south (z+) direction, pieces are placed every piece_separation
 		setDefaultIfNotSet(DDConfig, "o_pieces", 3);
 		setDefaultIfNotSet(DDConfig, "lr_pieces", 1);
 		setDefaultIfNotSet(DDConfig, "l_pieces", 1);
@@ -51,7 +51,7 @@ public class ConfigManager {
 		setDefaultIfNotSet(DDConfig, "t_pieces", 1);
 		setDefaultIfNotSet(DDConfig, "i_pieces", 1);
 		
-		setDefaultWaypointIfNotSet(waypoints, "tetris_o"); // all o-shaped pieces are placed starting from this position (y-bottom north-west corner) and then to the south (seperated by <piece_separation> air blocks)
+		setDefaultWaypointIfNotSet(waypoints, "tetris_o"); // all o-shaped pieces are placed starting from this position (y-bottom north-west corner) and then to the south (seperated by a margin of air blocks, see <piece_separation>)
 		setDefaultWaypointIfNotSet(waypoints, "tetris_lr"); // etc...
 		setDefaultWaypointIfNotSet(waypoints, "tetris_l");
 		setDefaultWaypointIfNotSet(waypoints, "tetris_z");

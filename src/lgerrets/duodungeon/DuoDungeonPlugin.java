@@ -35,4 +35,9 @@ public class DuoDungeonPlugin extends JavaPlugin {
     public void onDisable() {
 
     }
+    
+    public static void logg(Object obj)
+    {
+    	System.out.println(obj);
+    }
 }
