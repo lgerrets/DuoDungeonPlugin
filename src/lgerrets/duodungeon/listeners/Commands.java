@@ -13,6 +13,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.game.DungeonMap;
+import lgerrets.duodungeon.game.DuoPlayer;
+import lgerrets.duodungeon.game.DuoTeam;
 
 public class Commands implements CommandExecutor  {
 	
@@ -29,10 +31,32 @@ public class Commands implements CommandExecutor  {
     	{
     		DungeonMap.game.SpawnNewPiece();
     	}
+    	else if (args[0].equalsIgnoreCase("team"))
+    	{
+    		String team;
+    		if (args.length != 2)
+    			team = "none";
+    		team = args[1];
+    		if(!(sender instanceof Player))
+    			return false;
+    		DuoPlayer p = DuoPlayer.getPlayer(((Player) sender).getUniqueId());
+    		if (team.equalsIgnoreCase("builder"))
+    		{
+    			p.setTeam(DuoTeam.teams.get(DuoTeam.TeamType.BUILDER));
+    		}
+    		else if (team.equalsIgnoreCase("runner"))
+    		{
+    			p.setTeam(DuoTeam.teams.get(DuoTeam.TeamType.RUNNER));
+    		}
+    		else
+    		{
+    			p.setTeam(DuoTeam.teams.get(DuoTeam.TeamType.NONE));
+    		}
+    	}
     	else
     	{
     		return false;
     	}
-		return true;    	
+		return true;
     }
 }

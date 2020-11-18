@@ -41,7 +41,7 @@ public class DungeonMap {
 	private Coords3d pastebin;
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
 	private int max_height;
-	private World world;
+	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	private com.sk89q.worldedit.world.World WEWorld;
 	private ArrayDeque<Piece> pieces;
 	
@@ -80,7 +80,6 @@ public class DungeonMap {
 								pastebin_wp.getInt("Y"),
 								pastebin_wp.getInt("Z"));
 		max_height = (int)ConfigManager.DDConfig.get("max_height");
-		world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 		// WEWorld = (com.sk89q.worldedit.world.World) (BukkitWorld) world;
 		WEWorld = new BukkitWorld(world);
 		pieces = new ArrayDeque<Piece>();
