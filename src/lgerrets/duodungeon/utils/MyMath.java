@@ -12,6 +12,13 @@ public class MyMath {
 		return x;
 	}
 	
+	public static double Abs(double x)
+	{
+		if (x < 0)
+			return -x;
+		return x;
+	}
+	
 	public static int RandomUInt(int max)
 	{
 		return Abs(randomizer.nextInt() % max);

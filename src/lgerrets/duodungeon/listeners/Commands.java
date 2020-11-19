@@ -15,6 +15,9 @@ import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.game.DungeonMap;
 import lgerrets.duodungeon.game.DuoPlayer;
 import lgerrets.duodungeon.game.DuoTeam;
+import lgerrets.duodungeon.utils.Index2d;
+import lgerrets.duodungeon.utils.Index2d.Direction;
+import lgerrets.duodungeon.utils.MyMath;
 
 public class Commands implements CommandExecutor  {
 	

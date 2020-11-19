@@ -4,10 +4,10 @@ public class Index2d {
 	
 	public enum Direction
 	{
-		NORTH, // north
-		EAST, // east
-		SOUTH, // south
-		WEST, // west
+		NORTH, // north = z-
+		EAST, // east = x+
+		SOUTH, // south = z+
+		WEST, // west = x-
 	}
 	
 	// (0,0) is at the north-west corner
@@ -44,5 +44,25 @@ public class Index2d {
 	public Index2d add(Index2d obj)
 	{
 		return new Index2d(x+obj.x, z+obj.z);
+	}
+	
+	static public Direction DeltasToDirection(double dx, double dz)
+	{
+		Direction d;
+    	if (MyMath.Abs(dx) > MyMath.Abs(dz))
+    	{
+    		if (dx > 0)
+    			d = Direction.EAST;
+    		else
+    			d = Direction.WEST;
+    	}
+    	else
+    	{
+    		if (dz > 0)
+    			d = Direction.SOUTH;
+    		else
+    			d = Direction.NORTH;
+    	}
+    	return d;
 	}
 }

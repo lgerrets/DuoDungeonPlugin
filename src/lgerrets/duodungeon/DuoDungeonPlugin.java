@@ -6,6 +6,7 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import lgerrets.duodungeon.game.DuoPlayer;
 import lgerrets.duodungeon.listeners.Commands;
+import lgerrets.duodungeon.listeners.PlayerEvents;
 
 public class DuoDungeonPlugin extends JavaPlugin {
 	private static JavaPlugin instance;
@@ -25,6 +26,8 @@ public class DuoDungeonPlugin extends JavaPlugin {
     	Bukkit.getPluginManager().registerEvents(dummyClass, DuoDungeonPlugin.getInstance());
     	this.getCommand("dd").setExecutor(new Commands());
     	DuoPlayer.RegisterListener(this);
+    	PlayerEvents playerEvents = new PlayerEvents();
+		Bukkit.getPluginManager().registerEvents(playerEvents, this);
     }
     
     public static WorldEditPlugin getWorldEdit()

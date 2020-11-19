@@ -44,50 +44,63 @@ public class DungeonMap {
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	private com.sk89q.worldedit.world.World WEWorld;
 	private ArrayDeque<Piece> pieces;
+	private boolean is_running;
+	private Piece moving_piece = null;
 	
-	static public DungeonMap game = null;
+	static public DungeonMap game = new DungeonMap(false);
 	
 	static public void InitializeDungeon()
 	{
-		game = new DungeonMap();
+		game = new DungeonMap(true);
 	}
 	
-	public DungeonMap()
+	public DungeonMap(boolean is_running)
 	{
-		map = new int[][] {
-				{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-				{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-		}; //15*21
-		ConfigurationSection origin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("dungeon_origin");
-		dungeon_origin = new Coords3d(origin_wp.getInt("X"),
-							  origin_wp.getInt("Y"),
-							  origin_wp.getInt("Z"));
-		ConfigurationSection pastebin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("pastebin");
-		pastebin = new Coords3d(pastebin_wp.getInt("X"),
-								pastebin_wp.getInt("Y"),
-								pastebin_wp.getInt("Z"));
-		max_height = (int)ConfigManager.DDConfig.get("max_height");
-		// WEWorld = (com.sk89q.worldedit.world.World) (BukkitWorld) world;
-		WEWorld = new BukkitWorld(world);
-		pieces = new ArrayDeque<Piece>();
-		ClearArea();
+		this.is_running = true;
+		if (is_running)
+		{
+			map = new int[][] {
+					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+			}; //15*21
+			ConfigurationSection origin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("dungeon_origin");
+			dungeon_origin = new Coords3d(origin_wp.getInt("X"),
+								  origin_wp.getInt("Y"),
+								  origin_wp.getInt("Z"));
+			ConfigurationSection pastebin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("pastebin");
+			pastebin = new Coords3d(pastebin_wp.getInt("X"),
+									pastebin_wp.getInt("Y"),
+									pastebin_wp.getInt("Z"));
+			max_height = (int)ConfigManager.DDConfig.get("max_height");
+			// WEWorld = (com.sk89q.worldedit.world.World) (BukkitWorld) world;
+			WEWorld = new BukkitWorld(world);
+			pieces = new ArrayDeque<Piece>();
+			ClearArea();
+		}
+	}
+	
+	public boolean IsRunning()
+	{
+		return is_running;
 	}
 	
 	public void SpawnNewPiece()
 	{
+		DuoDungeonPlugin.logg(this.ToString());
+		
 		Piece piece = Piece.SpawnPiece(map);
 		piece.InitUpdateMap(map);
 		pieces.add(piece);
@@ -106,6 +119,7 @@ public class DungeonMap {
 		
 		MoveTiles(piece_from, pastebins, false);
 		MoveTiles(pastebins, piece_dest, true);
+		moving_piece = piece;
 	}
 	
 	public void SpawnNewPieceOld()
@@ -148,32 +162,37 @@ public class DungeonMap {
 		}
 	}
 	
-	public void TryMovePiece(Piece piece, Direction d)
+	public void TryMovePiece(Direction d)
 	{
 		boolean canMove = true;
-		Index2d[] newcoords = new Index2d[piece.map_occupation.length];
+		Index2d[] newcoords = new Index2d[moving_piece.map_occupation.length];
 		int idx = 0;
-		for (Index2d coord : piece.map_occupation) // loop through each tile of this piece
+		for (Index2d coord : moving_piece.map_occupation) // loop through each tile of this piece
 		{
 			Index2d newcoord = coord.CalculateRelative(1, d); // calculate where this tile would go
 			newcoords[idx] = newcoord;
-			if (map[newcoord.x][newcoord.z] > 0) // the destination tile is occupied...
+			if (this.GetMap(newcoord.x,newcoord.z) > 0) // the destination tile is occupied...
 			{
 				canMove = false;
-				for (Index2d other : piece.map_occupation)
-					if (other == newcoord) // ... actually it is occupied by a tile of this piece
+				DuoDungeonPlugin.logg("can't move");
+				for (Index2d other : moving_piece.map_occupation)
+				{
+					if (other.equals(newcoord)) // ... actually it is occupied by a tile of this piece
 					{
 						canMove = true;
+						DuoDungeonPlugin.logg("can move!");
 						break;
 					}
-				break;
+				}
+				if (!canMove)
+					break;
 			}
 			idx += 1;
 		}
-		
+    	DuoDungeonPlugin.logg(canMove);
 		if (canMove)
 		{
-			MovePiece(piece, newcoords, true);
+			MovePiece(moving_piece, newcoords, true);
 		}
 	}
 	
@@ -192,6 +211,16 @@ public class DungeonMap {
 		
 		MoveTiles(piece_from, pastebins, cut);
 		MoveTiles(pastebins, piece_dest, true);
+		
+		for (Index2d idx : piece.map_occupation)
+		{
+			this.SetMap(idx.x,idx.z,0);
+		}
+		for (Index2d idx : destination)
+		{
+			this.SetMap(idx.x,idx.z,1);
+		}
+		piece.SetMapOccupation(destination);
 	}
 	
 	public void MoveTiles(BlockVector3[] from, BlockVector3[] dest, boolean cut)
@@ -246,5 +275,29 @@ public class DungeonMap {
 		return BlockVector3.at((int) origin.x + tile_size*coords.x,
 				(int) origin.y,
 				(int) origin.z + tile_size*coords.z);
+	}
+	
+	public void SetMap(int x, int z, int value)
+	{
+		map[x][z] = value;
+	}
+	
+	public int GetMap(int x, int z)
+	{
+		return map[x][z];
+	}
+	
+	public String ToString()
+	{
+		String ret = "";
+		for (int x = 0; x < map.length ; x+=1)
+		{
+			for (int z = 0 ; z < map[0].length ; z+=1)
+			{
+				ret += String.valueOf(this.GetMap(x,z));
+			}
+			ret += "\n";
+		}
+		return ret;
 	}
 }
