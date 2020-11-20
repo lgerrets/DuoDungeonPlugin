@@ -32,7 +32,8 @@ public class Commands implements CommandExecutor  {
     	}
     	else if (args[0].equalsIgnoreCase("spawn"))
     	{
-    		DungeonMap.game.SpawnNewPiece();
+    		if (DungeonMap.game.IsRunning())
+    			DungeonMap.game.SpawnNewPiece();
     	}
     	else if (args[0].equalsIgnoreCase("team"))
     	{

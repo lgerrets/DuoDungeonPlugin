@@ -56,7 +56,7 @@ public class DungeonMap {
 	
 	public DungeonMap(boolean is_running)
 	{
-		this.is_running = true;
+		this.is_running = is_running;
 		if (is_running)
 		{
 			map = new int[][] {
@@ -89,6 +89,7 @@ public class DungeonMap {
 			WEWorld = new BukkitWorld(world);
 			pieces = new ArrayDeque<Piece>();
 			ClearArea();
+			SpawnNewPiece();
 		}
 	}
 	

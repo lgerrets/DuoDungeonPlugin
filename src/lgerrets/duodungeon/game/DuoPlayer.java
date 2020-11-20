@@ -107,7 +107,7 @@ public class DuoPlayer
 	{
 		this.id = ID;
 		this.name = Name;
-		team = null;
+		team = DuoTeam.teams.get(DuoTeam.TeamType.NONE);
 	}
 	
 	public String getName()

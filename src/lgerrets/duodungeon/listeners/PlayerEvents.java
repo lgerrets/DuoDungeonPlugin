@@ -16,6 +16,8 @@ public class PlayerEvents implements Listener {
     	if (DungeonMap.game.IsRunning())
     	{
 	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
+	    	if (p == null)
+	    		DuoDungeonPlugin.logg("Player is null");
 	        if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER && (e.getFrom().getZ() != e.getTo().getZ() || e.getFrom().getX() != e.getTo().getX())) {
 	            // move the unplaced piece
 	        	double dx = e.getTo().getX() - e.getFrom().getX();
