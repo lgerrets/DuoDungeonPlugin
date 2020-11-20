@@ -136,16 +136,22 @@ public class DuoPlayer
 	
 	public void setTeam(DuoTeam t)
 	{
+		Player p = this.getPlayer();
+		
 		if (this.team == t)
+		{
+			if(p != null)
+			{
+				p.sendMessage("You are already in team " + t.teamType.toString() + "!");
+			}
 			return;
-
+		}
+		
 		this.team = t;
 		String playerName = this.name;
 		String name = playerName.length() > 14 ? playerName.substring(0, 14) : playerName;
-		Player p = null;
 		try 
 		{
-			p = this.getPlayer();
 			if(p != null)
 			{
 				p.setPlayerListName(t.color + name);
@@ -174,6 +180,14 @@ public class DuoPlayer
 			if(p != null)
 			{
 				Coords3d coords = Coords3d.FromWaypoint("builder");
+				p.teleport(new Location(DungeonMap.world, coords.x, coords.y, coords.z));
+			}
+		}
+		else if (t.teamType == DuoTeam.TeamType.RUNNER)
+		{
+			if(p != null)
+			{
+				Coords3d coords = Coords3d.FromWaypoint("runner");
 				p.teleport(new Location(DungeonMap.world, coords.x, coords.y, coords.z));
 			}
 		}

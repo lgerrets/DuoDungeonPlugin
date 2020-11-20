@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.Material;
 
@@ -60,21 +61,22 @@ public class DungeonMap {
 		if (is_running)
 		{
 			map = new int[][] {
-					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
+				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
 			}; //15*21
 			ConfigurationSection origin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("dungeon_origin");
 			dungeon_origin = new Coords3d(origin_wp.getInt("X"),
@@ -148,19 +150,51 @@ public class DungeonMap {
 	
 	public void ClearArea()
 	{
-		BlockVector3 to = Index2dToBlockVector3(new Index2d(map.length, map[0].length), dungeon_origin);
-		to = to.add(0, max_height, 0);
-		CuboidRegion region = new CuboidRegion(WEWorld, dungeon_origin.toBlockVector3(), to);
-		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-		
-		System.out.println("Cleared " + String.valueOf(region.getVolume()) + " Blocks for the dungeon");
-
-		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) { // get the edit session and use -1 for max blocks for no limit, this is a try with resources statement to ensure the edit session is closed after use
-			editSession.setBlocks(region, BukkitAdapter.adapt(Material.AIR.createBlockData()));
-		} catch (WorldEditException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		BlockVector3 dungeon_origin_3 = dungeon_origin.toBlockVector3();
+		BlockVector3 temp_3;
+		BlockArrayClipboard clipboard;
+		int volume = 0;
+		int dy;
+		BlockData mat;
+		for (int x=0 ; x<map.length ; x+=1)
+		{
+			for (int z=0 ; z<map[0].length ; z+=1)
+			{
+				switch(this.GetMap(x, z, -1))
+				{
+				case 0:
+					dy = max_height;
+					mat = Material.AIR.createBlockData();
+					break;
+				case 2:
+					dy = 0;
+					mat = Material.OBSIDIAN.createBlockData();
+					break;
+				case 3:
+					dy = max_height;
+					mat = Material.WHITE_STAINED_GLASS.createBlockData();
+					break;
+				default:
+					dy = max_height;
+					mat = Material.AIR.createBlockData();
+					break;
+				}
+				
+				temp_3 = Index2dToBlockVector3(new Index2d(x, z), dungeon_origin);
+				CuboidRegion region = new CuboidRegion(WEWorld, temp_3, temp_3.add(tile_size-1, dy, tile_size-1));
+				clipboard = new BlockArrayClipboard(region);
+				volume += region.getVolume();
+				
+				try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) { // get the edit session and use -1 for max blocks for no limit, this is a try with resources statement to ensure the edit session is closed after use
+					editSession.setBlocks(region, BukkitAdapter.adapt(mat));
+				} catch (WorldEditException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
+		
+		System.out.println("Cleared " + String.valueOf(volume) + " Blocks for the dungeon");
 	}
 	
 	public void TryMovePiece(Direction d)
@@ -172,7 +206,7 @@ public class DungeonMap {
 		{
 			Index2d newcoord = coord.CalculateRelative(1, d); // calculate where this tile would go
 			newcoords[idx] = newcoord;
-			if (this.GetMap(newcoord.x,newcoord.z) > 0) // the destination tile is occupied...
+			if (this.GetMap(newcoord.x,newcoord.z, 1) > 0) // the destination tile is occupied...
 			{
 				canMove = false;
 				DuoDungeonPlugin.logg("can't move");
@@ -283,9 +317,17 @@ public class DungeonMap {
 		map[x][z] = value;
 	}
 	
-	public int GetMap(int x, int z)
+	public int GetMap(int x, int z, int default_if_oob)
 	{
-		return map[x][z];
+		if (this.IsOutOfBounds(x, z))
+			return default_if_oob;
+		else
+			return map[x][z];
+	}
+	
+	public boolean IsOutOfBounds(int x, int z)
+	{
+		return x < 0 || x >= map.length || z < 0 || z >= map[0].length;			
 	}
 	
 	public String ToString()
@@ -295,7 +337,7 @@ public class DungeonMap {
 		{
 			for (int z = 0 ; z < map[0].length ; z+=1)
 			{
-				ret += String.valueOf(this.GetMap(x,z));
+				ret += String.valueOf(this.GetMap(x,z, -1));
 			}
 			ret += "\n";
 		}

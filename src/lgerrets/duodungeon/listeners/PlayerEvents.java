@@ -2,6 +2,8 @@ package lgerrets.duodungeon.listeners;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DungeonMap;
@@ -16,8 +18,10 @@ public class PlayerEvents implements Listener {
     	if (DungeonMap.game.IsRunning())
     	{
 	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
-	    	if (p == null)
+	    	if (p == null) {
 	    		DuoDungeonPlugin.logg("Player is null");
+	    		return;
+	    	}
 	        if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER && (e.getFrom().getZ() != e.getTo().getZ() || e.getFrom().getX() != e.getTo().getX())) {
 	            // move the unplaced piece
 	        	double dx = e.getTo().getX() - e.getFrom().getX();
@@ -26,6 +30,20 @@ public class PlayerEvents implements Listener {
 	        	DungeonMap.game.TryMovePiece(dir);
 	            e.setCancelled(true);
 	        }
+    	}
+    }
+    
+    @EventHandler
+    public void onLeftClick(PlayerInteractEvent e) {
+    	if (DungeonMap.game.IsRunning())
+    	{
+	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
+	    	if (p == null) {
+	    		DuoDungeonPlugin.logg("Player is null");
+	    		return;
+	    	}
+	    	if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER)
+	    		DungeonMap.game.SpawnNewPiece();
     	}
     }
 }
