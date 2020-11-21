@@ -1,5 +1,6 @@
 package lgerrets.duodungeon.game;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 import lgerrets.duodungeon.ConfigManager;
@@ -59,7 +62,9 @@ public class Piece {
 		occupations.put(TetrisShape.I, tmp_i);
 	}*/
 	
-	public static Map<TetrisShape, Index2d[]> occupations = new EnumMap<TetrisShape, Index2d[]>(TetrisShape.class);
+	private static int tile_size = DungeonMap.tile_size;
+	
+	public static EnumMap<TetrisShape, Index2d[]> occupations = new EnumMap<TetrisShape, Index2d[]>(TetrisShape.class);
 	static {
 		Index2d[] tmp_o = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(1,1)};
 		occupations.put(TetrisShape.O, tmp_o);
@@ -83,7 +88,7 @@ public class Piece {
 		occupations.put(TetrisShape.I, tmp_i);
 	}
 	
-	private static Map<TetrisShape, Integer> n_templates = new HashMap<>();
+	private static EnumMap<TetrisShape, Integer> n_templates = new EnumMap<TetrisShape, Integer>(TetrisShape.class);
 	static {
 		n_templates.put(TetrisShape.O, ConfigManager.DDConfig.getInt("o_pieces"));
 		n_templates.put(TetrisShape.LR, ConfigManager.DDConfig.getInt("lr_pieces"));
@@ -97,7 +102,7 @@ public class Piece {
 	
 	private static ConfigurationSection waypoints = ConfigManager.DDConfig.getConfigurationSection("Waypoints");
 	
-	private static Map<TetrisShape, Coords3d> template_origins = new HashMap<>();
+	private static EnumMap<TetrisShape, Coords3d> template_origins = new EnumMap<TetrisShape, Coords3d>(TetrisShape.class);
 	static {
 		template_origins.put(TetrisShape.O, Coords3d.FromWaypoint("tetris_o"));
 		template_origins.put(TetrisShape.LR, Coords3d.FromWaypoint("tetris_lr"));
@@ -107,6 +112,30 @@ public class Piece {
 		template_origins.put(TetrisShape.T, Coords3d.FromWaypoint("tetris_t"));
 		template_origins.put(TetrisShape.I, Coords3d.FromWaypoint("tetris_i"));
 	}
+	
+	private static EnumMap<TetrisShape, Coords3d[][]> chest_pos_relative = new EnumMap<TetrisShape, Coords3d[][]>(TetrisShape.class);
+	static {
+		Coords3d tile_origin;
+		Coords3d template_origin;
+		for (TetrisShape shape_ : all_shapes) // loop through all pieces
+		{
+			Coords3d[][] shape_pos = new Coords3d[n_templates.get(shape_)][];
+			for (int i_template=0 ; i_template<n_templates.get(shape_) ; i_template+=1) // loop through all templates
+			{
+				template_origin = TemplateOrigin(shape_, i_template); // origin of template
+				ArrayList<Coords3d> piece_pos = new ArrayList<Coords3d>();
+				for (Index2d tile_idx : occupations.get(shape_)) // loop through all tiles of template
+				{
+					tile_origin = Coords3d.Index2dToCoords3d(tile_idx, template_origin); // tile origin
+					piece_pos.addAll(SearchBlock(tile_origin, Material.CHEST)); // search chests
+				}
+				shape_pos[i_template] = piece_pos.toArray(new Coords3d[piece_pos.size()]); // these are absolute coordinates of chests in this piece
+				for (int i_chest=0; i_chest<shape_pos[i_template].length; i_chest+=1) // we transform each chest coords into relative coordinates
+					shape_pos[i_template][i_chest] = shape_pos[i_template][i_chest].add(-template_origin.x, -template_origin.y, -template_origin.z);
+			}
+			chest_pos_relative.put(shape_, shape_pos);
+		}
+	}
 
 	private int rotation;
 	public TetrisShape shape;
@@ -114,6 +143,7 @@ public class Piece {
 	public Index2d[] clone_from;
 	public Index2d map_origin;
 	private int rndTemplate;
+	private int rndChest;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_origin_)
 	{
@@ -123,12 +153,19 @@ public class Piece {
 		for (int i=0; i<occupations.get(tetris_shape).length; i+=1)
 			map_occupation[i] = occupations.get(tetris_shape)[i].add(map_origin);
 		clone_from = occupations.get(shape);
+		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
+		rndChest = MyMath.RandomUInt(chest_pos_relative.get(shape)[rndTemplate].length);
 	}
 	
 	public Coords3d GetTemplateOrigin()
 	{
-		return template_origins.get(shape).add(0, 0, rndTemplate*template_separator);
+		return TemplateOrigin(shape, rndTemplate);
+	}
+	
+	static public Coords3d TemplateOrigin(TetrisShape shape, int i_template)
+	{
+		return template_origins.get(shape).add(0, 0, i_template*template_separator);
 	}
 	
 	public Piece() // OLD
@@ -136,14 +173,14 @@ public class Piece {
 		
 	}
 	
-	public void SetMapOccupation(Index2d[] map_occupation_) // OLD
+	public void SetMapOccupation(Index2d[] map_occupation_)
 	{
 		map_occupation = map_occupation_;
 	}
 	
 	public static Piece SpawnPiece(int[][] map)
 	{
-		TetrisShape shape = DrawTetrisShape();
+		TetrisShape shape = RndTetrisShape();
 		boolean found = false;
 		Index2d idx = new Index2d(0,0);
 		int tries = 0;
@@ -171,6 +208,19 @@ public class Piece {
 		return map;
 	}
 	
+	public void PlacePiece(Coords3d map_origin)
+	{
+		for (int i_chest=0; i_chest<chest_pos_relative.get(shape)[rndTemplate].length; i_chest+=1)
+		{
+			if (i_chest != rndChest)
+			{
+				Coords3d chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation[0], map_origin).add(chest_pos_relative.get(shape)[rndTemplate][i_chest]);
+				// TODO: take rotation into account
+				DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
+			}
+		}
+	}
+	
 	private static boolean MapIsFreeForTetrisShape(int[][] map, Index2d origin, TetrisShape shape_)
 	{
 		for (Index2d offset : occupations.get(shape_))
@@ -184,9 +234,26 @@ public class Piece {
 		return true;
 	}
 	
-	private static TetrisShape DrawTetrisShape()
+	private static TetrisShape RndTetrisShape()
 	{
 		int idx = MyMath.RandomUInt(all_shapes.size());
 		return all_shapes.get(idx);
+	}
+	
+	private static ArrayList<Coords3d> SearchBlock(Coords3d origin, Material mat)
+	{
+		ArrayList<Coords3d> founds = new ArrayList<Coords3d>(); 
+		for(int x=origin.x; x<origin.x+tile_size ; x+=1)
+		{
+			for (int y=origin.y; y<origin.y+DungeonMap.max_height; y+=1)
+			{
+				for(int z=origin.z; z<origin.z+tile_size ; z+=1)
+				{
+					if (DungeonMap.world.getBlockAt(x, y, z).getType().equals(mat))
+						founds.add(new Coords3d(x,y,z));
+				}
+			}
+		}
+		return founds;
 	}
 }

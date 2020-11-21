@@ -1,15 +1,20 @@
 package lgerrets.duodungeon.utils;
 
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.sk89q.worldedit.math.BlockVector3;
 
 import lgerrets.duodungeon.ConfigManager;
+import lgerrets.duodungeon.game.DungeonMap;
 
 public class Coords3d {
 	public int x; // x++ = go east
 	public int y;
 	public int z; // z++ = go south
+	static int tile_size = DungeonMap.tile_size;
+	static World world = DungeonMap.world;
 	
 	public Coords3d()
 	{
@@ -38,9 +43,36 @@ public class Coords3d {
 		return coords;
 	}
 	
+	public Coords3d add(Coords3d o)
+	{
+		return this.add(o.x, o.y, o.z);
+	}
+	
 	public Coords3d add(int X, int Y, int Z)
 	{
 		return new Coords3d(x+X, y+Y, z+Z);
+	}
+	
+	static public Coords3d Index2dToCoords3d(Index2d idx, Coords3d origin)
+	{
+		return new Coords3d(origin.x + tile_size*idx.x,
+				origin.y,
+				origin.z + tile_size*idx.z);
+	}
+	
+	static public Location Index2dToLocation(Index2d coords, Coords3d origin)
+	{
+		return new Location(world,
+				origin.x + tile_size*coords.x,
+				origin.y,
+				origin.z + tile_size*coords.z);
+	}
+	
+	static public BlockVector3 Index2dToBlockVector3(Index2d coords, Coords3d origin)
+	{
+		return BlockVector3.at((int) origin.x + tile_size*coords.x,
+				(int) origin.y,
+				(int) origin.z + tile_size*coords.z);
 	}
 }
 
