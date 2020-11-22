@@ -74,6 +74,14 @@ public class Coords3d {
 				(int) origin.y,
 				(int) origin.z + tile_size*coords.z);
 	}
+	
+	static public Coords3d[] CalculateExtremaCorners(Coords3d a, Coords3d b)
+	{
+		Coords3d[] ret = new Coords3d[2];
+		ret[0] = new Coords3d(MyMath.Min(a.x, b.x), MyMath.Min(a.y, b.y), MyMath.Min(a.z, b.z));
+		ret[1] = new Coords3d(MyMath.Max(a.x, b.x), MyMath.Max(a.y, b.y), MyMath.Max(a.z, b.z));
+		return ret;
+	}
 }
 
 

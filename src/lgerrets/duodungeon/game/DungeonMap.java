@@ -15,6 +15,7 @@ import lgerrets.duodungeon.game.Piece.TetrisShape;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
+import lgerrets.duodungeon.utils.WEUtils;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -43,7 +44,7 @@ public class DungeonMap {
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
 	static public int max_height = ConfigManager.DDConfig.getInt("max_height");;
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
-	static private com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
+	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
 	private ArrayDeque<Piece> pieces;
 	private boolean is_running;
 	private Piece moving_piece = null;
@@ -155,7 +156,6 @@ public class DungeonMap {
 	{
 		BlockVector3 dungeon_origin_3 = dungeon_origin.toBlockVector3();
 		BlockVector3 temp_3;
-		BlockArrayClipboard clipboard;
 		int volume = 0;
 		int dy;
 		BlockData mat;
@@ -170,7 +170,7 @@ public class DungeonMap {
 					mat = Material.AIR.createBlockData();
 					break;
 				case 2:
-					dy = 0;
+					dy = 1;
 					mat = Material.OBSIDIAN.createBlockData();
 					break;
 				case 3:
@@ -185,15 +185,9 @@ public class DungeonMap {
 				
 				temp_3 = Coords3d.Index2dToBlockVector3(new Index2d(x, z), dungeon_origin);
 				CuboidRegion region = new CuboidRegion(WEWorld, temp_3, temp_3.add(tile_size-1, dy, tile_size-1));
-				clipboard = new BlockArrayClipboard(region);
 				volume += region.getVolume();
 				
-				try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) { // get the edit session and use -1 for max blocks for no limit, this is a try with resources statement to ensure the edit session is closed after use
-					editSession.setBlocks(region, BukkitAdapter.adapt(mat));
-				} catch (WorldEditException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				WEUtils.FillRegion(WEWorld, region, mat);
 			}
 		}
 		
@@ -266,37 +260,7 @@ public class DungeonMap {
 		int n_tiles = from.length;
 		for (int idx=0; idx<n_tiles; idx+=1)
 		{
-			/*
-			DuoDungeonPlugin.getWorldEdit().getWorldEdit().newEditSession(world);
-			//DuoDungeonPlugin.getWorldEdit().getWorldEdit().getEditSessionFactory().getEditSession(() world, -1);
-			*/
-			CuboidRegion region = new CuboidRegion(WEWorld, from[idx], BlockVector3.at(from[idx].getBlockX()+tile_size-1, from[idx].getBlockY()+max_height, from[idx].getBlockZ()+tile_size-1));
-			BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-
-			try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) {
-			    ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-			        editSession, region, clipboard, region.getMinimumPoint()
-			    );
-			    // configure here
-			    if (cut)
-			    	forwardExtentCopy.setSourceFunction(new BlockReplace(editSession, BukkitAdapter.adapt(Material.AIR.createBlockData())));
-			    Operations.complete(forwardExtentCopy);
-			} catch (WorldEditException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(WEWorld, -1)) {
-			    Operation operation = new ClipboardHolder(clipboard)
-			            .createPaste(editSession)
-			            .to(dest[idx])
-			            // configure here
-			            .build();
-			    Operations.complete(operation);
-			} catch (WorldEditException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			WEUtils.CopyRegion(WEWorld, from[idx], from[idx].add(BlockVector3.at(tile_size-1, max_height, tile_size-1)), dest[idx], cut);
 		}
 	}
 	

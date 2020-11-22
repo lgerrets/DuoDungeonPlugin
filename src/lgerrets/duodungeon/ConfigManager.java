@@ -38,6 +38,9 @@ public class ConfigManager {
 		setDefaultIfNotSet(DDConfig, "world", "world");
 
 		ConfigurationSection gameConfig = setDefaultSectionIfNotSet(DDConfig, "Game");
+		setDefaultIfNotSet(gameConfig, "rare_drops", 0.2);
+		setDefaultIfNotSet(gameConfig, "epic_drops", 0.05);
+		setDefaultIfNotSet(gameConfig, "legendary_drops", 0.02);
 		
 		ConfigurationSection waypoints = setDefaultSectionIfNotSet(DDConfig, "Waypoints");
 		setDefaultWaypointIfNotSet(waypoints, "pastebin"); // origin of a free pastebin area (north-west corner) which extends to the south (z+)

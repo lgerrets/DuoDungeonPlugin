@@ -11,7 +11,10 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
+
+import com.sk89q.worldedit.regions.CuboidRegion;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
@@ -19,6 +22,7 @@ import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
 import lgerrets.duodungeon.utils.MyMath;
+import lgerrets.duodungeon.utils.WEUtils;
 
 public class Piece {
 	public enum TetrisShape
@@ -136,6 +140,17 @@ public class Piece {
 			chest_pos_relative.put(shape_, shape_pos);
 		}
 	}
+	
+	public enum ChestRarity { COMMON, RARE, EPIC, LEGENDARY };
+	private static EnumMap<ChestRarity, Double> rarity_drops = new EnumMap<ChestRarity, Double>(ChestRarity.class);
+	static {
+		ConfigurationSection game_config = ConfigManager.DDConfig.getConfigurationSection("Game");
+		rarity_drops.put(ChestRarity.RARE, game_config.getDouble("rare_drops"));
+		rarity_drops.put(ChestRarity.EPIC, game_config.getDouble("epic_drops"));
+		rarity_drops.put(ChestRarity.LEGENDARY, game_config.getDouble("legendary_drops"));
+		rarity_drops.put(ChestRarity.COMMON, 1.0 - rarity_drops.get(ChestRarity.RARE)
+				- rarity_drops.get(ChestRarity.EPIC) - rarity_drops.get(ChestRarity.LEGENDARY));
+	}
 
 	private int rotation;
 	public TetrisShape shape;
@@ -144,6 +159,7 @@ public class Piece {
 	public Index2d map_origin;
 	private int rndTemplate;
 	private int rndChest;
+	private ChestRarity rndRarity;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_origin_)
 	{
@@ -156,6 +172,7 @@ public class Piece {
 		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
 		rndChest = MyMath.RandomUInt(chest_pos_relative.get(shape)[rndTemplate].length);
+		rndRarity = MyMath.RandomChoice(rarity_drops.entrySet());
 	}
 	
 	public Coords3d GetTemplateOrigin()
@@ -210,14 +227,48 @@ public class Piece {
 	
 	public void PlacePiece(Coords3d map_origin)
 	{
+		Coords3d chest_pos_abs;
+		// remove all but 1 chest
 		for (int i_chest=0; i_chest<chest_pos_relative.get(shape)[rndTemplate].length; i_chest+=1)
 		{
 			if (i_chest != rndChest)
 			{
-				Coords3d chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation[0], map_origin).add(chest_pos_relative.get(shape)[rndTemplate][i_chest]);
+				chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation[0], map_origin).add(chest_pos_relative.get(shape)[rndTemplate][i_chest]);
 				// TODO: take rotation into account
 				DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
 			}
+		}
+		
+		// create a beacon, and place colored stained glass
+		Material mat = Material.WHITE_STAINED_GLASS;
+		chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation[0], map_origin).add(chest_pos_relative.get(shape)[rndTemplate][rndChest]);
+		boolean do_spawn_beacon = false;
+		switch(rndRarity)
+		{
+		case COMMON:
+			break;
+		case RARE:
+			do_spawn_beacon = true;
+			mat = Material.BLUE_STAINED_GLASS;
+			break;
+		case EPIC:
+			do_spawn_beacon = true;
+			mat = Material.PURPLE_STAINED_GLASS;
+			break;
+		case LEGENDARY:
+			do_spawn_beacon = true;
+			mat = Material.ORANGE_STAINED_GLASS;
+			break;
+		default:
+			break;				
+		}
+		if (do_spawn_beacon)
+		{
+			WEUtils.FillRegionExcept(DungeonMap.world, chest_pos_abs.add(0, 1, 0), chest_pos_abs.add(0, DungeonMap.max_height, 0), mat, Material.AIR);
+			DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
+			DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
+			CuboidRegion region = new CuboidRegion(DungeonMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
+			WEUtils.FillRegion(DungeonMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
 		}
 	}
 	
