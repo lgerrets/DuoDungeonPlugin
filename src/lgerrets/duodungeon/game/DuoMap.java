@@ -45,6 +45,7 @@ public class DuoMap {
 	static public int max_height = ConfigManager.DDConfig.getInt("max_height");;
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
+	static private int not_placed_height = 10;
 	private ArrayDeque<Piece> pieces;
 	private boolean is_running;
 	private Piece moving_piece = null;
@@ -104,29 +105,48 @@ public class DuoMap {
 	public void SpawnNewPiece()
 	{
 		if (moving_piece != null)
-			moving_piece.PlacePiece(dungeon_origin);
-	
-		Piece piece = Piece.SpawnPiece(map);
-		piece.InitUpdateMap(map);
-		pieces.add(piece);
-		
-		int n_tiles = piece.map_occupation.length;
-		BlockVector3[] piece_from = new BlockVector3[n_tiles];
-		BlockVector3[] pastebins = new BlockVector3[n_tiles];
-		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
-		Coords3d template_origin = piece.GetTemplateOrigin();
-		for (int idx=0; idx<n_tiles; idx+=1)
 		{
-			piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.clone_from[idx], template_origin);
-			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
-			piece_dest[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin);
+			int n_tiles = moving_piece.map_occupation.length;
+			BlockVector3[] piece_from = new BlockVector3[n_tiles];
+			BlockVector3[] pastebins = new BlockVector3[n_tiles];
+			BlockVector3[] piece_dest = new BlockVector3[n_tiles];
+			for (int idx=0; idx<n_tiles; idx+=1)
+			{
+				piece_from[idx] = Coords3d.Index2dToBlockVector3(moving_piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
+				pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
+				piece_dest[idx] = Coords3d.Index2dToBlockVector3(moving_piece.map_occupation[idx], dungeon_origin);
+			}
+			
+			MoveTiles(piece_from, pastebins, true);
+			MoveTiles(pastebins, piece_dest, true);
+			
+			moving_piece.PlacePiece(dungeon_origin);
 		}
 		
-		MoveTiles(piece_from, pastebins, false);
-		MoveTiles(pastebins, piece_dest, true);
-		moving_piece = piece;
-
-		DuoDungeonPlugin.logg(this.ToString());
+		{
+	
+			Piece piece = Piece.SpawnPiece(map);
+			piece.InitUpdateMap(map);
+			pieces.add(piece);
+			
+			int n_tiles = piece.map_occupation.length;
+			BlockVector3[] piece_from = new BlockVector3[n_tiles];
+			BlockVector3[] pastebins = new BlockVector3[n_tiles];
+			BlockVector3[] piece_dest = new BlockVector3[n_tiles];
+			Coords3d template_origin = piece.GetTemplateOrigin();
+			for (int idx=0; idx<n_tiles; idx+=1)
+			{
+				piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.clone_from[idx], template_origin);
+				pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
+				piece_dest[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
+			}
+			
+			MoveTiles(piece_from, pastebins, false);
+			MoveTiles(pastebins, piece_dest, true);
+			moving_piece = piece;
+	
+			DuoDungeonPlugin.logg(this.ToString());
+		}
 	}
 	
 	public void ClearArea()
@@ -143,7 +163,7 @@ public class DuoMap {
 				switch(this.GetMap(x, z, -1))
 				{
 				case 0:
-					dy = max_height;
+					dy = max_height+not_placed_height;
 					mat = Material.AIR.createBlockData();
 					break;
 				case 2:
@@ -213,9 +233,9 @@ public class DuoMap {
 		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
 		for (int idx=0; idx<n_tiles; idx+=1)
 		{
-			piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin);
+			piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
 			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
-			piece_dest[idx] = Coords3d.Index2dToBlockVector3(destination[idx], dungeon_origin);
+			piece_dest[idx] = Coords3d.Index2dToBlockVector3(destination[idx], dungeon_origin.add(0,not_placed_height,0));
 		}
 		
 		MoveTiles(piece_from, pastebins, cut);
