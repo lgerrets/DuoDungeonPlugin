@@ -15,6 +15,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 
 import com.sk89q.worldedit.regions.CuboidRegion;
@@ -153,13 +155,15 @@ public class Piece {
 	private int rndTemplate;
 	private int rndChest;
 	private ChestRarity rndRarity;
+	private int n_tiles;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_occupation00)
 	{
 		shape = tetris_shape;
-		map_occupation = new Index2d[occupations.get(tetris_shape).length];
+		n_tiles = occupations.get(tetris_shape).length;
+		map_occupation = new Index2d[n_tiles];
 		this.map_occupation00 = map_occupation00;
-		for (int i=0; i<occupations.get(tetris_shape).length; i+=1)
+		for (int i=0; i<n_tiles; i+=1)
 			map_occupation[i] = occupations.get(tetris_shape)[i].add(map_occupation00);
 		clone_from = occupations.get(shape);
 		// TODO: random init rotation
@@ -273,6 +277,39 @@ public class Piece {
 			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
 			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
 			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
+		}
+		
+		// spawn mobs
+		int n_to_spawn_mobs = 3;
+		ArrayList<Coords3d> spawnables = new ArrayList<Coords3d>();
+		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
+		{
+			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], map_origin);
+			for(int x=tile_origin.x; x<tile_origin.x+tile_size ; x+=1)
+			{
+				for(int z=tile_origin.z; z<tile_origin.z+tile_size ; z+=1)
+				{
+					for (int y=tile_origin.y; y<tile_origin.y+DuoMap.max_height; )
+					{
+						if (DuoMap.world.getBlockAt(x, y+1, z).getType().equals(Material.AIR) && DuoMap.world.getBlockAt(x, y+2, z).getType().equals(Material.AIR))
+						{
+							if(!DuoMap.world.getBlockAt(x, y, z).getType().equals(Material.AIR))
+							{
+								spawnables.add(new Coords3d(x,y+1,z));
+							}
+							y += 3;
+						}
+						else
+							y += 1;
+					}
+				}
+			}
+		}
+		Integer[] rnd_coords = MyMath.RandomUInts(n_to_spawn_mobs, spawnables.size(), true);
+		for(int n_spawned_mobs=0; n_spawned_mobs<n_to_spawn_mobs; n_spawned_mobs+=1)
+		{
+			Zombie z = (Zombie) DuoMap.world.spawnEntity(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), EntityType.ZOMBIE);
+			z.getEquipment().setHelmet(new ItemStack(Material.STONE_BUTTON));
 		}
 	}
 	

@@ -8,6 +8,7 @@ import lgerrets.duodungeon.enchantments.CustomEnchants;
 import lgerrets.duodungeon.game.DuoPlayer;
 import lgerrets.duodungeon.listeners.Commands;
 import lgerrets.duodungeon.listeners.EnchantmentEvents;
+import lgerrets.duodungeon.listeners.MobEvents;
 import lgerrets.duodungeon.listeners.PlayerEvents;
 
 public class DuoDungeonPlugin extends JavaPlugin {
@@ -32,6 +33,7 @@ public class DuoDungeonPlugin extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(playerEvents, this);
 		CustomEnchants.register();
 		EnchantmentEvents.register(this);
+		MobEvents.register(this);
     }
     
     public static WorldEditPlugin getWorldEdit()

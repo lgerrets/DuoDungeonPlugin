@@ -106,6 +106,7 @@ public class DuoMap {
 	{
 		if (moving_piece != null)
 		{
+			// put down the piece (ie y -= not_placed_height)
 			int n_tiles = moving_piece.map_occupation.length;
 			BlockVector3[] piece_from = new BlockVector3[n_tiles];
 			BlockVector3[] pastebins = new BlockVector3[n_tiles];
@@ -120,6 +121,7 @@ public class DuoMap {
 			MoveTiles(piece_from, pastebins, true);
 			MoveTiles(pastebins, piece_dest, true);
 			
+			// spawn chest, mobs...
 			moving_piece.PlacePiece(dungeon_origin);
 		}
 		
