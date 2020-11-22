@@ -3,17 +3,10 @@ package lgerrets.duodungeon.game;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Zombie;
@@ -26,7 +19,6 @@ import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.Drops.ChestRarity;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
-import lgerrets.duodungeon.utils.Index2d.Direction;
 import lgerrets.duodungeon.utils.MyMath;
 import lgerrets.duodungeon.utils.WEUtils;
 
@@ -109,9 +101,7 @@ public class Piece {
 		n_templates.put(TetrisShape.I, ConfigManager.DDConfig.getInt("i_pieces"));
 	}
 	private static int template_separator = ConfigManager.DDConfig.getInt("piece_separation");
-	
-	private static ConfigurationSection waypoints = ConfigManager.DDConfig.getConfigurationSection("Waypoints");
-	
+		
 	private static EnumMap<TetrisShape, Coords3d> template_origins = new EnumMap<TetrisShape, Coords3d>(TetrisShape.class);
 	static {
 		template_origins.put(TetrisShape.O, Coords3d.FromWaypoint("tetris_o"));

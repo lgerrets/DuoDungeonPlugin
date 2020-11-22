@@ -52,8 +52,6 @@ public class WEUtils {
 	
 	static public void FillRegion(com.sk89q.worldedit.world.World world, CuboidRegion region, BlockData mat)
 	{
-		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-		
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1)) { // get the edit session and use -1 for max blocks for no limit, this is a try with resources statement to ensure the edit session is closed after use
 			editSession.setBlocks(region, BukkitAdapter.adapt(mat));
 		} catch (WorldEditException e) {

@@ -1,9 +1,5 @@
 package lgerrets.duodungeon.utils;
 
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-
 public class Cuboids {
 	/*
 	static void Copy(World world, Coords3d u0, Coords3d u1, Coords3d v0, boolean cut)
