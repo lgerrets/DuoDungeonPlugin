@@ -11,13 +11,17 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
 import com.sk89q.worldedit.regions.CuboidRegion;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.Drops.ChestRarity;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
@@ -66,7 +70,7 @@ public class Piece {
 		occupations.put(TetrisShape.I, tmp_i);
 	}*/
 	
-	private static int tile_size = DungeonMap.tile_size;
+	private static int tile_size = DuoMap.tile_size;
 	
 	public static EnumMap<TetrisShape, Index2d[]> occupations = new EnumMap<TetrisShape, Index2d[]>(TetrisShape.class);
 	static {
@@ -140,39 +144,28 @@ public class Piece {
 			chest_pos_relative.put(shape_, shape_pos);
 		}
 	}
-	
-	public enum ChestRarity { COMMON, RARE, EPIC, LEGENDARY };
-	private static EnumMap<ChestRarity, Double> rarity_drops = new EnumMap<ChestRarity, Double>(ChestRarity.class);
-	static {
-		ConfigurationSection game_config = ConfigManager.DDConfig.getConfigurationSection("Game");
-		rarity_drops.put(ChestRarity.RARE, game_config.getDouble("rare_drops"));
-		rarity_drops.put(ChestRarity.EPIC, game_config.getDouble("epic_drops"));
-		rarity_drops.put(ChestRarity.LEGENDARY, game_config.getDouble("legendary_drops"));
-		rarity_drops.put(ChestRarity.COMMON, 1.0 - rarity_drops.get(ChestRarity.RARE)
-				- rarity_drops.get(ChestRarity.EPIC) - rarity_drops.get(ChestRarity.LEGENDARY));
-	}
 
 	private int rotation;
 	public TetrisShape shape;
 	public Index2d[] map_occupation;
+	public Index2d map_occupation00;
 	public Index2d[] clone_from;
-	public Index2d map_origin;
 	private int rndTemplate;
 	private int rndChest;
 	private ChestRarity rndRarity;
 	
-	public Piece(TetrisShape tetris_shape, Index2d map_origin_)
+	public Piece(TetrisShape tetris_shape, Index2d map_occupation00)
 	{
-		map_origin = map_origin_;
 		shape = tetris_shape;
 		map_occupation = new Index2d[occupations.get(tetris_shape).length];
+		this.map_occupation00 = map_occupation00;
 		for (int i=0; i<occupations.get(tetris_shape).length; i+=1)
-			map_occupation[i] = occupations.get(tetris_shape)[i].add(map_origin);
+			map_occupation[i] = occupations.get(tetris_shape)[i].add(map_occupation00);
 		clone_from = occupations.get(shape);
 		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
 		rndChest = MyMath.RandomUInt(chest_pos_relative.get(shape)[rndTemplate].length);
-		rndRarity = MyMath.RandomChoice(rarity_drops.entrySet());
+		rndRarity = MyMath.RandomChoice(Drops.rarity_drops.entrySet());
 	}
 	
 	public Coords3d GetTemplateOrigin()
@@ -190,9 +183,10 @@ public class Piece {
 		
 	}
 	
-	public void SetMapOccupation(Index2d[] map_occupation_)
+	public void SetMapOccupation(Index2d[] map_occupation_, Index2d map_occupation00)
 	{
 		map_occupation = map_occupation_;
+		this.map_occupation00 = map_occupation00;
 	}
 	
 	public static Piece SpawnPiece(int[][] map)
@@ -233,15 +227,25 @@ public class Piece {
 		{
 			if (i_chest != rndChest)
 			{
-				chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation[0], map_origin).add(chest_pos_relative.get(shape)[rndTemplate][i_chest]);
+				chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(chest_pos_relative.get(shape)[rndTemplate][i_chest]);
 				// TODO: take rotation into account
-				DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
+				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
 			}
 		}
 		
+		// fill the chest
+		chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(chest_pos_relative.get(shape)[rndTemplate][rndChest]);
+		// TODO: take rotation into account
+		Block block = DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z);
+		if (block.getType() != Material.CHEST)
+			DuoDungeonPlugin.logg("WARNING: block " + chest_pos_abs.toString() + " is not a chest: "+block.getType().toString());
+		Chest chest = (Chest) block.getState();
+		ItemStack[] content = new ItemStack[1];
+		content[0] = Drops.DrawDrop(rndRarity, 0);
+		chest.getInventory().setContents(content);
+		
 		// create a beacon, and place colored stained glass
 		Material mat = Material.WHITE_STAINED_GLASS;
-		chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation[0], map_origin).add(chest_pos_relative.get(shape)[rndTemplate][rndChest]);
 		boolean do_spawn_beacon = false;
 		switch(rndRarity)
 		{
@@ -264,11 +268,11 @@ public class Piece {
 		}
 		if (do_spawn_beacon)
 		{
-			WEUtils.FillRegionExcept(DungeonMap.world, chest_pos_abs.add(0, 1, 0), chest_pos_abs.add(0, DungeonMap.max_height, 0), mat, Material.AIR);
-			DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
-			DungeonMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
-			CuboidRegion region = new CuboidRegion(DungeonMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
-			WEUtils.FillRegion(DungeonMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
+			WEUtils.FillRegionExcept(DuoMap.world, chest_pos_abs.add(0, 1, 0), chest_pos_abs.add(0, DuoMap.max_height, 0), mat, Material.AIR);
+			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
+			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
+			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
+			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
 		}
 	}
 	
@@ -296,11 +300,11 @@ public class Piece {
 		ArrayList<Coords3d> founds = new ArrayList<Coords3d>(); 
 		for(int x=origin.x; x<origin.x+tile_size ; x+=1)
 		{
-			for (int y=origin.y; y<origin.y+DungeonMap.max_height; y+=1)
+			for (int y=origin.y; y<origin.y+DuoMap.max_height; y+=1)
 			{
 				for(int z=origin.z; z<origin.z+tile_size ; z+=1)
 				{
-					if (DungeonMap.world.getBlockAt(x, y, z).getType().equals(mat))
+					if (DuoMap.world.getBlockAt(x, y, z).getType().equals(mat))
 						founds.add(new Coords3d(x,y,z));
 				}
 			}

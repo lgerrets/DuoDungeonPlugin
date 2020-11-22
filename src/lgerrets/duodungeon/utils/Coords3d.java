@@ -7,14 +7,14 @@ import org.bukkit.configuration.ConfigurationSection;
 import com.sk89q.worldedit.math.BlockVector3;
 
 import lgerrets.duodungeon.ConfigManager;
-import lgerrets.duodungeon.game.DungeonMap;
+import lgerrets.duodungeon.game.DuoMap;
 
 public class Coords3d {
 	public int x; // x++ = go east
 	public int y;
 	public int z; // z++ = go south
-	static int tile_size = DungeonMap.tile_size;
-	static World world = DungeonMap.world;
+	static int tile_size = DuoMap.tile_size;
+	static World world = DuoMap.world;
 	
 	public Coords3d()
 	{
@@ -51,6 +51,11 @@ public class Coords3d {
 	public Coords3d add(int X, int Y, int Z)
 	{
 		return new Coords3d(x+X, y+Y, z+Z);
+	}
+	
+	public String toString()
+	{
+		return "("+String.valueOf(x)+","+String.valueOf(y)+","+String.valueOf(z)+")";
 	}
 	
 	static public Coords3d Index2dToCoords3d(Index2d idx, Coords3d origin)

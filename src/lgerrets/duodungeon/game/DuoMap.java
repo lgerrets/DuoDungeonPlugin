@@ -36,7 +36,7 @@ import com.sk89q.worldedit.world.block.BaseBlock;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockType;
 
-public class DungeonMap {
+public class DuoMap {
 	
 	private int[][] map;
 	static private Coords3d dungeon_origin;
@@ -60,14 +60,14 @@ public class DungeonMap {
 								pastebin_wp.getInt("Z"));
 	}
 	
-	static public DungeonMap game = new DungeonMap(false);
+	static public DuoMap game = new DuoMap(false);
 	
 	static public void InitializeDungeon()
 	{
-		game = new DungeonMap(true);
+		game = new DuoMap(true);
 	}
 	
-	public DungeonMap(boolean is_running)
+	public DuoMap(boolean is_running)
 	{
 		this.is_running = is_running;
 		if (is_running)
@@ -129,29 +129,6 @@ public class DungeonMap {
 		DuoDungeonPlugin.logg(this.ToString());
 	}
 	
-	public void SpawnNewPieceOld()
-	{
-		Piece piece = new Piece();
-		pieces.add(piece);
-		Index2d[] map_occupation_ = {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(1,1)};
-		piece.SetMapOccupation(map_occupation_);
-		Index2d[] destination = {new Index2d(2,2), new Index2d(2,3), new Index2d(3,2), new Index2d(3,3)};
-			
-		int n_tiles = piece.map_occupation.length;
-		BlockVector3[] piece_from = new BlockVector3[n_tiles];
-		BlockVector3[] pastebins = new BlockVector3[n_tiles];
-		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
-		for (int idx=0; idx<n_tiles; idx+=1)
-		{
-			//piece_from[idx] = Index2dToBlockVector3(piece.map_occupation[idx], Piece.template_origins.get(TetrisShape.O));
-			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
-			piece_dest[idx] = Coords3d.Index2dToBlockVector3(destination[idx], dungeon_origin);
-		}
-		
-		MoveTiles(piece_from, pastebins, false);
-		MoveTiles(pastebins, piece_dest, true);
-	}
-	
 	public void ClearArea()
 	{
 		BlockVector3 dungeon_origin_3 = dungeon_origin.toBlockVector3();
@@ -170,7 +147,7 @@ public class DungeonMap {
 					mat = Material.AIR.createBlockData();
 					break;
 				case 2:
-					dy = 1;
+					dy = 2;
 					mat = Material.OBSIDIAN.createBlockData();
 					break;
 				case 3:
@@ -224,11 +201,11 @@ public class DungeonMap {
     	DuoDungeonPlugin.logg(canMove);
 		if (canMove)
 		{
-			MovePiece(moving_piece, newcoords, true);
+			MovePiece(moving_piece, newcoords, moving_piece.map_occupation00.CalculateRelative(1,d), true);
 		}
 	}
 	
-	public void MovePiece(Piece piece, Index2d[] destination, boolean cut)
+	public void MovePiece(Piece piece, Index2d[] destination, Index2d map_occupation00, boolean cut)
 	{
 		int n_tiles = piece.map_occupation.length;
 		BlockVector3[] piece_from = new BlockVector3[n_tiles];
@@ -252,7 +229,7 @@ public class DungeonMap {
 		{
 			this.SetMap(idx.x,idx.z,1);
 		}
-		piece.SetMapOccupation(destination);
+		piece.SetMapOccupation(destination, map_occupation00);
 	}
 	
 	public void MoveTiles(BlockVector3[] from, BlockVector3[] dest, boolean cut)

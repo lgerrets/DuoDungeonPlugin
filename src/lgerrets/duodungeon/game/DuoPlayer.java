@@ -180,7 +180,7 @@ public class DuoPlayer
 			if(p != null)
 			{
 				Coords3d coords = Coords3d.FromWaypoint("builder");
-				p.teleport(new Location(DungeonMap.world, coords.x, coords.y, coords.z));
+				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
 			}
 		}
 		else if (t.teamType == DuoTeam.TeamType.RUNNER)
@@ -188,7 +188,7 @@ public class DuoPlayer
 			if(p != null)
 			{
 				Coords3d coords = Coords3d.FromWaypoint("runner");
-				p.teleport(new Location(DungeonMap.world, coords.x, coords.y, coords.z));
+				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
 			}
 		}
 	}

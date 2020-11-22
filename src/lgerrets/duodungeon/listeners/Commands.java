@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
 import lgerrets.duodungeon.ConfigManager;
-import lgerrets.duodungeon.game.DungeonMap;
+import lgerrets.duodungeon.game.DuoMap;
 import lgerrets.duodungeon.game.DuoPlayer;
 import lgerrets.duodungeon.game.DuoTeam;
 import lgerrets.duodungeon.utils.Index2d;
@@ -28,12 +28,12 @@ public class Commands implements CommandExecutor  {
     		return false;
     	if (args[0].equalsIgnoreCase("start"))
     	{
-    		DungeonMap.InitializeDungeon();
+    		DuoMap.InitializeDungeon();
     	}
     	else if (args[0].equalsIgnoreCase("spawn"))
     	{
-    		if (DungeonMap.game.IsRunning())
-    			DungeonMap.game.SpawnNewPiece();
+    		if (DuoMap.game.IsRunning())
+    			DuoMap.game.SpawnNewPiece();
     	}
     	else if (args[0].equalsIgnoreCase("team"))
     	{

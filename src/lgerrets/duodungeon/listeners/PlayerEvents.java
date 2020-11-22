@@ -6,7 +6,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
-import lgerrets.duodungeon.game.DungeonMap;
+import lgerrets.duodungeon.game.DuoMap;
 import lgerrets.duodungeon.game.DuoPlayer;
 import lgerrets.duodungeon.game.DuoTeam;
 import lgerrets.duodungeon.utils.Index2d;
@@ -15,7 +15,7 @@ import lgerrets.duodungeon.utils.Index2d.Direction;
 public class PlayerEvents implements Listener {
     @EventHandler
     public void onMove(org.bukkit.event.player.PlayerMoveEvent e) {
-    	if (DungeonMap.game.IsRunning())
+    	if (DuoMap.game.IsRunning())
     	{
 	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
 	    	if (p == null) {
@@ -27,7 +27,7 @@ public class PlayerEvents implements Listener {
 	        	double dx = e.getTo().getX() - e.getFrom().getX();
 	        	double dz = e.getTo().getZ() - e.getFrom().getZ();
 	        	Direction dir = Index2d.DeltasToDirection(dx, dz);
-	        	DungeonMap.game.TryMovePiece(dir);
+	        	DuoMap.game.TryMovePiece(dir);
 	            e.setCancelled(true);
 	        }
     	}
@@ -35,7 +35,7 @@ public class PlayerEvents implements Listener {
     
     @EventHandler
     public void onLeftClick(PlayerInteractEvent e) {
-    	if (DungeonMap.game.IsRunning())
+    	if (DuoMap.game.IsRunning())
     	{
 	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
 	    	if (p == null) {
@@ -43,7 +43,7 @@ public class PlayerEvents implements Listener {
 	    		return;
 	    	}
 	    	if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER)
-	    		DungeonMap.game.SpawnNewPiece();
+	    		DuoMap.game.SpawnNewPiece();
     	}
     }
 }

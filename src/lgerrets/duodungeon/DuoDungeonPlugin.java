@@ -4,8 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
+import lgerrets.duodungeon.enchantments.CustomEnchants;
 import lgerrets.duodungeon.game.DuoPlayer;
 import lgerrets.duodungeon.listeners.Commands;
+import lgerrets.duodungeon.listeners.EnchantmentEvents;
 import lgerrets.duodungeon.listeners.PlayerEvents;
 
 public class DuoDungeonPlugin extends JavaPlugin {
@@ -28,6 +30,8 @@ public class DuoDungeonPlugin extends JavaPlugin {
     	DuoPlayer.RegisterListener(this);
     	PlayerEvents playerEvents = new PlayerEvents();
 		Bukkit.getPluginManager().registerEvents(playerEvents, this);
+		CustomEnchants.register();
+		EnchantmentEvents.register(this);
     }
     
     public static WorldEditPlugin getWorldEdit()
