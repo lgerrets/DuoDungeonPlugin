@@ -64,7 +64,4 @@ public class EnchantmentWrapper extends Enchantment {
 		// TODO Auto-generated method stub
 		return false;
 	}
-	
-	
-
 }

@@ -31,4 +31,23 @@ public class CustomEnchants {
 			e.printStackTrace();
 		}
 	}
+	
+	public static String levelToString(int level) {
+		if(level == 4)
+			return "IV";
+		else if (level == 9)
+			return "IX";
+		else {
+			String ret = "";
+			if (level >= 5)
+			{
+				level -= 5;
+				ret = "V";
+			}
+			for (int i=0; i<level; i+=1)
+				ret += "I";
+			return ret;
+		}
+		
+	}
 }

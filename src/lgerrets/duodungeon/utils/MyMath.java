@@ -1,6 +1,7 @@
 package lgerrets.duodungeon.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +46,7 @@ public class MyMath {
 	
 	public static int RandomUInt(int max)
 	{
-		return Abs(randomizer.nextInt() % max);
+		return Abs(randomizer.nextInt()) % max;
 	}
 	
 	public static Integer[] RandomUInts(int nb, int max, boolean distincts)
@@ -72,6 +73,19 @@ public class MyMath {
 	public static Double RandomFloat()
 	{
 		return randomizer.nextDouble();
+	}
+	
+	public static <T> T RandomChoiceUniform(Set<T> set)
+	{
+		Double rnd = RandomFloat();
+		Double thresh = 0.0;
+		for (T entry : set)
+		{
+			thresh += 1.0/set.size();
+			if (rnd < thresh)
+				return entry;
+		}
+		return null;
 	}
 	
 	public static <T> T RandomChoice(Set<Entry<T, Double>> probs)
