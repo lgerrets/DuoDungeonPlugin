@@ -98,4 +98,19 @@ public class MyMath {
 		}
 		return null;
 	}
+
+	public static double Min(double a, double b) {
+		if (a < b)
+			return a;
+		else
+			return b;
+	}
+	
+	public static double Max(double a, double b)
+	{
+		if (a > b)
+			return a;
+		else
+			return b;
+	}
 }

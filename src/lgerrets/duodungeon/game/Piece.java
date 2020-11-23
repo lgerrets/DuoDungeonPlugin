@@ -301,6 +301,10 @@ public class Piece {
 			Zombie z = (Zombie) DuoMap.world.spawnEntity(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), EntityType.ZOMBIE);
 			z.getEquipment().setHelmet(new ItemStack(Material.STONE_BUTTON));
 		}
+		
+		// update builder's combo
+		for (DuoBuilder builder : DuoTeam.builder_players)
+			builder.updateCombo(0.2);
 	}
 	
 	private static boolean MapIsFreeForTetrisShape(int[][] map, Index2d origin, TetrisShape shape_)

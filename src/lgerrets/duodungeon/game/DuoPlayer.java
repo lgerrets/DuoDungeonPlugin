@@ -21,7 +21,7 @@ import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.utils.Coords3d;
 
 public class DuoPlayer
-{
+{	
 	private static final Map<UUID, DuoPlayer> players = new ConcurrentHashMap<UUID,DuoPlayer>();
 		
 	public static DuoPlayer getPlayer(UUID id)
@@ -77,7 +77,7 @@ public class DuoPlayer
 			DuoPlayer p = getPlayer(player.getUniqueId());
 			if(p != null)
 			{
-				
+				// todo: delete this
 			}
 		}
 		
@@ -103,6 +103,7 @@ public class DuoPlayer
 	{
 		this.id = ID;
 		this.name = Name;
+		DuoDungeonPlugin.logg(DuoTeam.teams);
 		team = DuoTeam.teams.get(DuoTeam.TeamType.NONE);
 	}
 	
@@ -143,7 +144,28 @@ public class DuoPlayer
 			return;
 		}
 		
+		if (t.teamType == DuoTeam.TeamType.BUILDER)
+		{
+			if(p != null)
+			{
+				Coords3d coords = Coords3d.FromWaypoint("builder");
+				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
+				DuoTeam.removePlayer(this, this.team.teamType);
+				DuoTeam.builder_players.add(new DuoBuilder(this));
+			}
+		}
+		else if (t.teamType == DuoTeam.TeamType.RUNNER)
+		{
+			if(p != null)
+			{
+				Coords3d coords = Coords3d.FromWaypoint("runner");
+				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
+				DuoTeam.removePlayer(this, this.team.teamType);
+				DuoTeam.runner_players.add(new DuoRunner(this));
+			}
+		}
 		this.team = t;
+		
 		String playerName = this.name;
 		String name = playerName.length() > 14 ? playerName.substring(0, 14) : playerName;
 		try 
@@ -168,23 +190,6 @@ public class DuoPlayer
 			catch(IllegalArgumentException e2) 
 			{
 				DuoDungeonPlugin.logg("[Annihilation] setPlayerListName error: " + e2.getMessage());
-			}
-		}
-		
-		if (t.teamType == DuoTeam.TeamType.BUILDER)
-		{
-			if(p != null)
-			{
-				Coords3d coords = Coords3d.FromWaypoint("builder");
-				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
-			}
-		}
-		else if (t.teamType == DuoTeam.TeamType.RUNNER)
-		{
-			if(p != null)
-			{
-				Coords3d coords = Coords3d.FromWaypoint("runner");
-				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
 			}
 		}
 	}

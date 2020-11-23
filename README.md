@@ -29,3 +29,26 @@ Project > properties > java build path > module dependencies > all modules > scr
 then 
 
 module-info.java > "requires <paste>"
+
+## Debug
+
+- NullPointerException on a static variable: could have meant interdependecy between class static variables, but actually I forgot to initialize a ```EnumMap<...> x **= new EnumMap<>(...)**```
+
+## Bugs / Todos
+
+Bugs:
+- call SetTeam in Player constructor when Player joins server
+- adventure mode causes builder left click to trigger nothing when clicking on barrier block
+- builder right click triggers place
+- deal with player exit (currently exceptions occur)
+
+Todos:
+- piece rotation
+- builder assemble big squares for massive mob effect (stunned?)
+- builder slow effect / give him different levels of speed boots
+- checkpoints
+- life loss
+- default structures on map
+- mobs:
+  - without helmet + fire resistance, to give runners fire on melee hit
+

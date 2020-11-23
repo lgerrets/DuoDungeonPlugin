@@ -187,13 +187,11 @@ public class DuoMap {
 			if (this.GetMap(newcoord.x,newcoord.z, 1) > 0) // the destination tile is occupied...
 			{
 				canMove = false;
-				DuoDungeonPlugin.logg("can't move");
 				for (Index2d other : moving_piece.map_occupation)
 				{
 					if (other.equals(newcoord)) // ... actually it is occupied by a tile of this piece
 					{
 						canMove = true;
-						DuoDungeonPlugin.logg("can move!");
 						break;
 					}
 				}
@@ -202,7 +200,6 @@ public class DuoMap {
 			}
 			idx += 1;
 		}
-    	DuoDungeonPlugin.logg(canMove);
 		if (canMove)
 		{
 			MovePiece(moving_piece, newcoords, moving_piece.map_occupation00.CalculateRelative(1,d), true);
