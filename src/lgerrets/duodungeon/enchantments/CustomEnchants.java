@@ -7,7 +7,13 @@ import java.util.stream.Collectors;
 import org.bukkit.enchantments.Enchantment;
 
 public class CustomEnchants {
-	public static final Enchantment PRINT = new EnchantmentWrapper("print", "Print", 1);
+	public static final Enchantment PRINT = new EnchantmentWrapper("duoprint", "Print", 1);
+	public static final Enchantment GATHERER = new EnchantmentWrapper("duogatherer", "Gatherer", 2);
+	public static final Enchantment LIFESTEAL = new EnchantmentWrapper("duolifesteal", "Lifesteal", 2);
+	public static final Enchantment ROBUST = new EnchantmentWrapper("duorobust", "Robust", 2);
+	public static final Enchantment SPEED = new EnchantmentWrapper("duospeed", "Speed", 1);
+	public static final Enchantment JUMPY = new EnchantmentWrapper("duojumpy", "Jumpy", 1);
+	public static final Enchantment STRENGTH = new EnchantmentWrapper("duostrength", "Strength", 2);
 	
 	public static void register() {
 		boolean registered = Arrays.stream(Enchantment.values()).collect(Collectors.toList()).contains(PRINT);
@@ -15,6 +21,12 @@ public class CustomEnchants {
 		if (!registered)
 		{
 			registerEnchantment(PRINT);
+			registerEnchantment(GATHERER);
+			registerEnchantment(LIFESTEAL);
+			registerEnchantment(ROBUST);
+			registerEnchantment(SPEED);
+			registerEnchantment(JUMPY);
+			registerEnchantment(STRENGTH);
 		}
 	}
 	

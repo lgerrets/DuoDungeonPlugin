@@ -1,14 +1,19 @@
 package lgerrets.duodungeon.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.enchantments.CustomEnchants;
+import lgerrets.duodungeon.utils.MyMath;
 
 public class EnchantmentEvents {
 	
@@ -37,6 +42,28 @@ public class EnchantmentEvents {
 			// if (event.getPlayer().getFirstEmpty() == -1)
 			DuoDungeonPlugin.logg("Triggered enchantment");
 		}
+		
+		@EventHandler
+		public void onKillMob(EntityDamageByEntityEvent event)
+		{
+			Entity damager = event.getDamager();
+			if (!(damager instanceof Player))
+				return;
+			Entity damaged = event.getEntity();
+			if (!(damaged instanceof Mob))
+				return;
+			Player player = (Player) damager;
+			ItemStack item = player.getInventory().getItemInMainHand();
+			if (!(item.getItemMeta().hasEnchant(CustomEnchants.LIFESTEAL)))
+				return;
+			Mob mob = (Mob) damaged;
+			double damage = event.getFinalDamage();
+			if (mob.getHealth() - damage > 0)
+				return;
+			int lifesteal_lvl = item.getItemMeta().getEnchantLevel(CustomEnchants.LIFESTEAL);
+			player.setHealth(MyMath.Min(player.getMaxHealth(), player.getHealth() + lifesteal_lvl));
+		}
+		
 	}
 	
 

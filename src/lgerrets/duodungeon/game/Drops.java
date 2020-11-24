@@ -97,6 +97,9 @@ public class Drops {
 		Set<DropData> temp_enchantments = new HashSet<DropData>();
 		temp_enchantments.add(new DropData(Enchantment.DAMAGE_ALL, 1, 1));
 		temp_enchantments.add(new DropData(Enchantment.DAMAGE_ALL, 3, 2));
+		temp_enchantments.add(new DropData(Enchantment.DAMAGE_ALL, 5, 4));
+		temp_enchantments.add(new DropData(CustomEnchants.LIFESTEAL, 1, 2));
+		temp_enchantments.add(new DropData(CustomEnchants.LIFESTEAL, 5, 5));
 		temp_enchantments.add(new DropData(CustomEnchants.PRINT, 1, 1));
 		enchantments_score.put(DropType.MELEE, temp_enchantments);
 		
@@ -123,6 +126,12 @@ public class Drops {
 		temp_enchantments.add(new DropData(Enchantment.PROTECTION_ENVIRONMENTAL, 1, 1));
 		enchantments_score.put(DropType.LEGGINGS, temp_enchantments);
 	}
+	/*CustomEnchants.GATHERER
+	CustomEnchants.LIFESTEAL
+	CustomEnchants.ROBUST
+	CustomEnchants.SPEED
+	CustomEnchants.JUMPY
+	CustomEnchants.STRENGTH*/
 	
 	static public ItemStack DrawDrop(ChestRarity rarity, int tier)
 	{
@@ -182,7 +191,7 @@ public class Drops {
 			if (data.drop_score + effective_score > max_score)
 				continue;
 			// reject because enchantment and item are incompatible
-			if (data.ench.equals(Enchantment.DAMAGE_ALL) && mat.equals(Material.STONE_PICKAXE))
+			if ((data.ench.equals(Enchantment.DAMAGE_ALL) || data.ench.equals(CustomEnchants.LIFESTEAL)) && mat.equals(Material.STONE_PICKAXE))
 				continue;
 			// reject because the item already has this enchantment
 			if (item.containsEnchantment(data.ench))
