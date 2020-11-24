@@ -1,11 +1,17 @@
 package lgerrets.duodungeon.game;
 
 import java.util.ArrayDeque;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.bukkit.Material;
 
 import lgerrets.duodungeon.ConfigManager;
@@ -13,6 +19,7 @@ import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
+import lgerrets.duodungeon.utils.MyMath;
 import lgerrets.duodungeon.utils.WEUtils;
 
 import com.sk89q.worldedit.bukkit.BukkitWorld;
@@ -22,6 +29,7 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 public class DuoMap {
 	
 	private int[][] map;
+	private int[][] square5;
 	static private Coords3d dungeon_origin;
 	static private Coords3d pastebin;
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
@@ -32,6 +40,12 @@ public class DuoMap {
 	private ArrayDeque<Piece> pieces;
 	private boolean is_running;
 	private Piece moving_piece = null;
+	static private int square5_size = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("superstun_squaresize");
+	static {
+		if (square5_size % 2 == 0)
+			square5_size += 1;
+	}
+	static private int square5_effectduration = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("superstun_duration"); // in ticks
 	
 	static {
 		ConfigurationSection origin_wp = ConfigManager.DDConfig.getConfigurationSection("Waypoints").getConfigurationSection("dungeon_origin");
@@ -74,6 +88,7 @@ public class DuoMap {
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
 			}; //15*21
+			square5 = new int[map.length][map[0].length]; // java initializes all values to 0
 			pieces = new ArrayDeque<Piece>();
 			ClearArea();
 			SpawnNewPiece();
@@ -272,5 +287,60 @@ public class DuoMap {
 			ret += "\n";
 		}
 		return ret;
+	}
+	
+	public void PlaceTileAt(int x_tile, int z_tile)
+	{
+		// map[x][z] is already 1 because on piece place the piece's y just drops down 
+		for(int x_square5_center=MyMath.Max(x_tile-(square5_size-1)/2, 0); x_square5_center<=MyMath.Min(x_tile+(square5_size-1)/2,square5.length); x_square5_center+=1)
+		{
+			for(int z_square5_center=MyMath.Max(z_tile-(square5_size-1)/2, 0); z_square5_center<=MyMath.Min(z_tile+(square5_size-1)/2,square5.length); z_square5_center+=1)
+			{
+				square5[x_square5_center][z_square5_center] += 1;
+				if (square5[x_square5_center][z_square5_center] == square5_size*square5_size)
+				{
+					for(int x_tile2=MyMath.Max(x_tile-(square5_size-1)/2, 0); x_tile2<=MyMath.Min(x_tile+(square5_size-1)/2,square5.length); x_tile2+=1)
+					{
+						for(int z_tile2=MyMath.Max(z_tile-(square5_size-1)/2, 0); z_tile2<=MyMath.Min(z_tile+(square5_size-1)/2,square5.length); z_tile2+=1)
+						{
+							RemoveTileFromSquare5(x_tile2, z_tile2);
+						}
+					}
+					// stun all mobs
+					ApplySuperStun();
+				}
+			}
+		}
+	}
+	
+	public void RemoveTileAt(int x, int z)
+	{
+		map[x][z] = 0;
+		RemoveTileFromSquare5(x,z);
+	}
+	
+	public void RemoveTileFromSquare5(int x, int z)
+	{
+		for(int xx=MyMath.Max(x-(square5_size-1)/2, 0); xx<=MyMath.Min(x+(square5_size-1)/2,square5.length); xx+=1)
+		{
+			for(int zz=MyMath.Max(z-(square5_size-1)/2, 0); zz<=MyMath.Min(z+(square5_size-1)/2,square5.length); zz+=1)
+			{
+				square5[xx][zz] -= 1;
+			}
+		}
+	}
+	
+	public void ApplySuperStun()
+	{
+		DuoDungeonPlugin.logg("SUPERSTUN!");
+		List<LivingEntity> entities = world.getLivingEntities();
+		for (LivingEntity e : entities)
+		{
+			if (e instanceof Monster)
+			{
+				e.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, square5_effectduration, 15));
+				e.setArrowCooldown(square5_effectduration);
+			}
+		}
 	}
 }

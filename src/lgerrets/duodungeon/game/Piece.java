@@ -305,6 +305,12 @@ public class Piece {
 		// update builder's combo
 		for (DuoBuilder builder : DuoTeam.builder_players)
 			builder.updateCombo(0.2);
+		
+		// update square5 map (superstun)
+		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
+		{
+			DuoMap.game.PlaceTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);
+		}
 	}
 	
 	private static boolean MapIsFreeForTetrisShape(int[][] map, Index2d origin, TetrisShape shape_)

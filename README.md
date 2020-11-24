@@ -44,8 +44,7 @@ Bugs:
 
 Todos:
 - piece rotation
-- builder assemble big squares for massive mob effect (stunned?)
-- builder slow effect / give him different levels of speed boots
+- builder slow effect / give him several speed boots
 - checkpoints
 - life loss
 - default structures on map

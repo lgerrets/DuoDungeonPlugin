@@ -40,6 +40,8 @@ public class ConfigManager {
 		setDefaultIfNotSet(gameConfig, "rare_drops", 0.2);
 		setDefaultIfNotSet(gameConfig, "epic_drops", 0.05);
 		setDefaultIfNotSet(gameConfig, "legendary_drops", 0.02);
+		setDefaultIfNotSet(gameConfig, "superstun_duration", 100);
+		setDefaultIfNotSet(gameConfig, "superstun_squaresize", 5); // (if even, will be made odd)
 		
 		ConfigurationSection waypoints = setDefaultSectionIfNotSet(DDConfig, "Waypoints");
 		setDefaultWaypointIfNotSet(waypoints, "pastebin"); // origin of a free pastebin area (north-west corner) which extends to the south (z+)

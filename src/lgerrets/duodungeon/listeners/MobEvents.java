@@ -21,7 +21,7 @@ public class MobEvents {
 		}
 		
 		@EventHandler
-		 public void onBurn(EntityCombustEvent event){
+		public void onBurn(EntityCombustEvent event){
 			/* Instead put a helmet (even a button, which is quite invisible)
 			if (event.getEntity().getType().equals(EntityType.ZOMBIE))
 				event.setCancelled(true);
