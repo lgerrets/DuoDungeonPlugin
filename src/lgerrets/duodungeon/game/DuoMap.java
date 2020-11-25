@@ -278,7 +278,7 @@ public class DuoMap {
 	public String ToString()
 	{
 		String ret = "";
-		for (int x = 0; x < map.length ; x+=1)
+		for (int x = map.length-1; x >= 0 ; x-=1)
 		{
 			for (int z = 0 ; z < map[0].length ; z+=1)
 			{

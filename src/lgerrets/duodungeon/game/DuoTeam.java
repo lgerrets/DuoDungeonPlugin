@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 
 public class DuoTeam {
 	public enum TeamType
@@ -37,6 +39,21 @@ public class DuoTeam {
 	{
 		this.color = color;
 		this.teamType = teamType;
+	}
+	
+	static public int HasEnchant(TeamType type, Enchantment ench)
+	{
+		int total_level = 0;
+		for (DuoTeammate mate : all_players.get(type))
+		{
+			ItemStack[] equipments = mate.getDuoPlayer().getPlayer().getEquipment().getArmorContents();
+			for (ItemStack equipment : equipments)
+			{
+				if (equipment != null && equipment.getItemMeta().hasEnchant(ench))
+					total_level += equipment.getItemMeta().getEnchantLevel(ench);
+			}
+		}
+		return total_level;
 	}
 	
 	static void removePlayer(DuoPlayer p, TeamType teamType) {

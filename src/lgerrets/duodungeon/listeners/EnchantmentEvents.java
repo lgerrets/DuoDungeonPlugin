@@ -54,6 +54,10 @@ public class EnchantmentEvents {
 				return;
 			Player player = (Player) damager;
 			ItemStack item = player.getInventory().getItemInMainHand();
+			if(item == null)
+				return;
+			if (!item.hasItemMeta())
+				return;
 			if (!(item.getItemMeta().hasEnchant(CustomEnchants.LIFESTEAL)))
 				return;
 			Mob mob = (Mob) damaged;
