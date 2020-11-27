@@ -1,6 +1,7 @@
 package lgerrets.duodungeon.game;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -13,6 +14,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
@@ -30,14 +32,14 @@ public class DuoMap {
 	
 	private int[][] map;
 	private int[][] square5;
-	static private Coords3d dungeon_origin;
+	static public Coords3d dungeon_origin;
 	static private Coords3d pastebin;
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
 	static public int max_height = ConfigManager.DDConfig.getInt("max_height");;
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
 	static private int not_placed_height = 10;
-	private ArrayDeque<Piece> pieces;
+	public static ArrayList<Piece> pieces;
 	private boolean is_running;
 	private Piece moving_piece = null;
 	static private int square5_size = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("superstun_squaresize");
@@ -89,9 +91,56 @@ public class DuoMap {
 				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
 			}; //15*21
 			square5 = new int[map.length][map[0].length]; // java initializes all values to 0
-			pieces = new ArrayDeque<Piece>();
+			pieces = new ArrayList<Piece>();
 			ClearArea();
 			SpawnNewPiece();
+			
+	        Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {
+	            @Override
+	            public void run() {
+	            	if (DuoMap.game.IsRunning())
+	            	{
+	            		ArrayList<Piece> to_delete = new ArrayList<Piece>();
+	            		for (Piece piece : pieces)
+	            		{
+		            		if (!piece.is_placed)
+		            			continue;
+		            		piece.lifetime_cooldown.tick();
+		            		if (!piece.is_active)
+		            		{
+		            			if (piece.players.size() > 0)
+		            			{
+		            				piece.is_active = true;
+		            				piece.lifetime_cooldown.cpt = MyMath.Max(200, (int) piece.lifetime_cooldown.cpt);
+		            			}
+		            		}
+		            		if (!piece.is_active)
+		            			continue;
+		            		int state = -1;
+		            		if (piece.lifetime_cooldown.cpt == 80)
+		            			state = 1;
+		            		else if (piece.lifetime_cooldown.cpt == 60)
+		            			state = 2;
+		            		else if (piece.lifetime_cooldown.cpt == 40)
+		            			state = 3;
+		            		else if (piece.lifetime_cooldown.cpt == 20)
+		            			state = 4;
+		            		else if (piece.lifetime_cooldown.isReady())
+		            			state = 999;
+		            		if (state == 999)
+		            			to_delete.add(piece);
+		        			else if (state < 0) {}
+		        			else
+		        			{
+		        				piece.PlaySound(Sound.ENTITY_ARMOR_STAND_HIT, 5, state);
+		        			}
+	            		}
+	            		for (Piece piece : to_delete)
+	            			piece.Delete();
+	            		to_delete.clear();
+	            	}
+	            }
+	        }, 0, 1);
 		}
 	}
 	

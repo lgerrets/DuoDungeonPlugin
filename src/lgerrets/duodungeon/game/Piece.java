@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,6 +21,7 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.Drops.ChestRarity;
+import lgerrets.duodungeon.utils.Cooldown;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.MyMath;
@@ -148,6 +153,10 @@ public class Piece {
 	private ChestRarity rndRarity;
 	private int n_tiles;
 	private Coords3d[] my_chest_pos_relative;
+	public boolean is_placed;
+	public boolean is_active;
+	public Cooldown lifetime_cooldown;
+	public ArrayList<DuoRunner> players;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_occupation00)
 	{
@@ -163,6 +172,25 @@ public class Piece {
 		rndChest = MyMath.RandomUInt(chest_pos_relative.get(shape)[rndTemplate].length);
 		rndRarity = MyMath.RandomChoice(Drops.rarity_drops.entrySet());
 		my_chest_pos_relative = chest_pos_relative.get(shape)[rndTemplate].clone();
+		is_placed = false;
+		players = new ArrayList<DuoRunner>();
+		lifetime_cooldown = new Cooldown(ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime"), false);
+	}
+	
+	public void Delete()
+	{
+		PlaySound(Sound.BLOCK_STONE_BREAK, 5, 1);
+		DuoMap.pieces.remove(this);
+		for (DuoRunner runner : players)
+		{
+			runner.piece = null;
+		}
+		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
+		{
+			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], DuoMap.dungeon_origin);
+			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size,DuoMap.max_height,tile_size).toBlockVector3());
+			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.AIR.createBlockData());
+		}
 	}
 	
 	public Coords3d GetTemplateOrigin()
@@ -319,6 +347,8 @@ public class Piece {
 		{
 			DuoMap.game.PlaceTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);
 		}
+		
+		is_placed = true;
 	}
 	
 	private static boolean MapIsFreeForTetrisShape(int[][] map, Index2d origin, TetrisShape shape_)
@@ -363,6 +393,27 @@ public class Piece {
 		for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
 		{
 			my_chest_pos_relative[i_chest] = my_chest_pos_relative[i_chest].CalculateRotation(rotation_center, orientation).add(translation);
+		}
+	}
+	
+	public boolean HasCoords3d(Coords3d coords)
+	{
+		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
+		{
+			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], DuoMap.dungeon_origin);
+			if (coords.x >= tile_origin.x && coords.z >= tile_origin.z && 
+					coords.x < tile_origin.x + DuoMap.tile_size && coords.z < tile_origin.z + DuoMap.tile_size)
+				return true;
+		}
+		return false;
+	}
+	
+	public void PlaySound(Sound s, int volume, int pitch)
+	{
+		for (DuoRunner runner : players)
+		{
+			Player p = runner.getDuoPlayer().getPlayer();
+			p.playSound(p.getLocation().add(0, -10, 0), s, volume, pitch);
 		}
 	}
 }

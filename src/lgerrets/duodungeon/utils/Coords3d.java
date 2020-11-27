@@ -28,6 +28,11 @@ public class Coords3d {
 		z = Z;
 	}
 	
+	public Coords3d(Location loc)
+	{
+		this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+	}
+	
 	public Location toLocation(World world)
 	{
 		return new Location(world, x, y, z);

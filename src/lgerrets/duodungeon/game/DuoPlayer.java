@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -149,7 +150,8 @@ public class DuoPlayer
 			if(p != null)
 			{
 				Coords3d coords = Coords3d.FromWaypoint("builder");
-				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 90));
+				DuoMap.world.getBlockAt(coords.x, coords.y-2, coords.z).setType(Material.WHITE_STAINED_GLASS_PANE); // BARRIER
+				p.teleport(new Location(DuoMap.world, coords.x+0.5, coords.y, coords.z+0.5, -90, 90));
 				DuoTeam.removePlayer(this, this.team.teamType);
 				DuoTeam.builder_players.add(new DuoBuilder(this));
 			}
@@ -159,7 +161,7 @@ public class DuoPlayer
 			if(p != null)
 			{
 				Coords3d coords = Coords3d.FromWaypoint("runner");
-				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
+				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 0));
 				DuoTeam.removePlayer(this, this.team.teamType);
 				DuoTeam.runner_players.add(new DuoRunner(this));
 			}

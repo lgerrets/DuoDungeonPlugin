@@ -15,7 +15,7 @@ public class DuoBuilder extends DuoTeammate {
 	
 	public DuoBuilder(DuoPlayer player) {
 		super(player);
-		player.getPlayer().setGameMode(GameMode.ADVENTURE);
+		player.getPlayer().setGameMode(GameMode.SURVIVAL);
 		combo = 0.0;
 		goldCpt = 0.0;
         Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {

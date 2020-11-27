@@ -1,8 +1,8 @@
 package lgerrets.duodungeon.utils;
 
 public class Cooldown {
-	private int cptMax;
-	private int cpt;
+	public int cptMax;
+	public int cpt;
 	
 	public Cooldown(int cptMax, boolean starts_ready)
 	{

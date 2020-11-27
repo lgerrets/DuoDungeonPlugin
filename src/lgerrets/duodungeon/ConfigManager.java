@@ -7,6 +7,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import lgerrets.duodungeon.utils.Cooldown;
+
 public class ConfigManager {
 	public static YamlConfiguration DDConfig = null;
 	private static File mainConfigFile = null;
@@ -42,6 +44,7 @@ public class ConfigManager {
 		setDefaultIfNotSet(gameConfig, "legendary_drops", 0.02);
 		setDefaultIfNotSet(gameConfig, "superstun_duration", 100);
 		setDefaultIfNotSet(gameConfig, "superstun_squaresize", 5); // (if even, will be made odd)
+		setDefaultIfNotSet(gameConfig, "piece_lifetime", 400);
 		
 		ConfigurationSection waypoints = setDefaultSectionIfNotSet(DDConfig, "Waypoints");
 		setDefaultWaypointIfNotSet(waypoints, "pastebin"); // origin of a free pastebin area (north-west corner) which extends to the south (z+)
