@@ -149,7 +149,7 @@ public class DuoPlayer
 			if(p != null)
 			{
 				Coords3d coords = Coords3d.FromWaypoint("builder");
-				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z));
+				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 90));
 				DuoTeam.removePlayer(this, this.team.teamType);
 				DuoTeam.builder_players.add(new DuoBuilder(this));
 			}

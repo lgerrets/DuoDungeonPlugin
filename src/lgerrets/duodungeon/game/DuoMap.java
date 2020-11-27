@@ -116,8 +116,8 @@ public class DuoMap {
 				piece_dest[idx] = Coords3d.Index2dToBlockVector3(moving_piece.map_occupation[idx], dungeon_origin);
 			}
 			
-			MoveTiles(piece_from, pastebins, true);
-			MoveTiles(pastebins, piece_dest, true);
+			MoveTiles(piece_from, pastebins, true, 0);
+			MoveTiles(pastebins, piece_dest, true, 0);
 			
 			// spawn chest, mobs...
 			moving_piece.PlacePiece(dungeon_origin);
@@ -141,11 +141,11 @@ public class DuoMap {
 				piece_dest[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
 			}
 			
-			MoveTiles(piece_from, pastebins, false);
-			MoveTiles(pastebins, piece_dest, true);
+			MoveTiles(piece_from, pastebins, false, 0);
+			MoveTiles(pastebins, piece_dest, true, 0);
 			moving_piece = piece;
 	
-			DuoDungeonPlugin.logg(this.ToString());
+			DuoDungeonPlugin.logg(this.toString());
 		}
 	}
 	
@@ -197,7 +197,7 @@ public class DuoMap {
 		int idx = 0;
 		for (Index2d coord : moving_piece.map_occupation) // loop through each tile of this piece
 		{
-			Index2d newcoord = coord.CalculateRelative(1, d); // calculate where this tile would go
+			Index2d newcoord = coord.CalculateTranslation(1, d); // calculate where this tile would go
 			newcoords[idx] = newcoord;
 			if (this.GetMap(newcoord.x,newcoord.z, 1) > 0) // the destination tile is occupied...
 			{
@@ -217,7 +217,7 @@ public class DuoMap {
 		}
 		if (canMove)
 		{
-			MovePiece(moving_piece, newcoords, moving_piece.map_occupation00.CalculateRelative(1,d), true);
+			MovePiece(moving_piece, newcoords, moving_piece.map_occupation00.CalculateTranslation(1,d), true);
 		}
 	}
 	
@@ -234,8 +234,8 @@ public class DuoMap {
 			piece_dest[idx] = Coords3d.Index2dToBlockVector3(destination[idx], dungeon_origin.add(0,not_placed_height,0));
 		}
 		
-		MoveTiles(piece_from, pastebins, cut);
-		MoveTiles(pastebins, piece_dest, true);
+		MoveTiles(piece_from, pastebins, cut, 0);
+		MoveTiles(pastebins, piece_dest, true, 0);
 		
 		for (Index2d idx : piece.map_occupation)
 		{
@@ -248,12 +248,83 @@ public class DuoMap {
 		piece.SetMapOccupation(destination, map_occupation00);
 	}
 	
-	public void MoveTiles(BlockVector3[] from, BlockVector3[] dest, boolean cut)
+	public void TryRotatePiece(boolean orientation)
+	{
+		boolean canMove = false;
+		Index2d center = null;
+		Index2d[] newcoords = new Index2d[moving_piece.map_occupation.length];
+		for (int idx_center=0; idx_center < moving_piece.map_occupation.length; idx_center+=1) // loop through each tile as a center candidate (todo: in the future, we could actually have more candidates as centers)
+		{
+			center = moving_piece.map_occupation[idx_center];
+			canMove = true;
+			for (int idx_other=0; idx_other < moving_piece.map_occupation.length; idx_other+=1) // calculate newcoords and check if there is no collision
+			{
+				newcoords[idx_other] = moving_piece.map_occupation[idx_other].CalculateRotation(center, orientation);
+				// (we obviously do not check collision between center and itself)
+				if (idx_other != idx_center && GetMap(newcoords[idx_other].x, newcoords[idx_other].z, 1) > 0)
+				{
+					canMove = false; // found a collision ...
+					for (int maybe_same_piece=0; maybe_same_piece < moving_piece.map_occupation.length; maybe_same_piece+=1) // ... maybe it's with another tile of the current piece?
+					{
+						if (moving_piece.map_occupation[maybe_same_piece].equals(newcoords[idx_other]))
+						{
+							canMove = true; // yes, so we remove the collision flag
+							break;
+						}
+					}
+					if (!canMove) // no, it is indeed a collision with another piece
+						break;
+				}
+			}
+			if (canMove) // we cannot rotate on this center, let's try another one...
+				break;
+		}
+		if(canMove)
+		{
+			Index2d map_occupation00 = moving_piece.map_occupation00.CalculateRotation(center, orientation);
+			RotatePiece(moving_piece, newcoords, map_occupation00, orientation);
+		}
+	}
+	
+	public void RotatePiece(Piece piece, Index2d[] map_occupation, Index2d map_occupation00, boolean orientation)
+	{
+		int n_tiles = piece.map_occupation.length;
+		BlockVector3[] piece_from = new BlockVector3[n_tiles];
+		BlockVector3[] pastebins = new BlockVector3[n_tiles];
+		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
+		for (int idx=0; idx<n_tiles; idx+=1)
+		{
+			piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
+			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
+			piece_dest[idx] = Coords3d.Index2dToBlockVector3(map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
+		}
+		
+		int rotation;
+		if (orientation)
+			rotation = 1;
+		else
+			rotation = -1;
+		MoveTiles(piece_from, pastebins, true, 0);
+		MoveTiles(pastebins, piece_dest, true, rotation);
+		
+		for (Index2d idx : piece.map_occupation)
+		{
+			this.SetMap(idx.x,idx.z,0);
+		}
+		for (Index2d idx : map_occupation)
+		{
+			this.SetMap(idx.x,idx.z,1);
+		}
+		piece.updateRotation(orientation);
+		piece.SetMapOccupation(map_occupation, map_occupation00);
+	}
+	
+	public void MoveTiles(BlockVector3[] from, BlockVector3[] dest, boolean cut, int rotation)
 	{
 		int n_tiles = from.length;
 		for (int idx=0; idx<n_tiles; idx+=1)
 		{
-			WEUtils.CopyRegion(WEWorld, from[idx], from[idx].add(BlockVector3.at(tile_size-1, max_height, tile_size-1)), dest[idx], cut);
+			WEUtils.CopyRegion(WEWorld, from[idx], from[idx].add(BlockVector3.at(tile_size-1, max_height, tile_size-1)), dest[idx], cut, rotation);
 		}
 	}
 	
@@ -275,7 +346,7 @@ public class DuoMap {
 		return x < 0 || x >= map.length || z < 0 || z >= map[0].length;			
 	}
 	
-	public String ToString()
+	public String toString()
 	{
 		String ret = "";
 		for (int x = map.length-1; x >= 0 ; x-=1)

@@ -15,11 +15,16 @@ import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
+import com.sk89q.worldedit.math.transform.Transform;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
 
+import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.DuoMap;
+
 public class WEUtils {
-	static public void CopyRegion(com.sk89q.worldedit.world.World world, BlockVector3 posA0, BlockVector3 posA1, BlockVector3 posB0, boolean cut)
+	static public void CopyRegion(com.sk89q.worldedit.world.World world, BlockVector3 posA0, BlockVector3 posA1, BlockVector3 posB0, boolean cut, int rotate)
 	{
 		CuboidRegion region = new CuboidRegion(world, posA0, posA1);
 		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
@@ -38,11 +43,21 @@ public class WEUtils {
 		}
 		
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1)) {
-		    Operation operation = new ClipboardHolder(clipboard)
-		            .createPaste(editSession)
-		            .to(posB0)
-		            // configure here
-		            .build();
+			ClipboardHolder holder = new ClipboardHolder(clipboard);
+
+		    if (rotate != 0) // should be -1 or 0 or 1 (1 for positive orientation)
+		    {
+			    AffineTransform transform = new AffineTransform();
+			    transform = transform.rotateY(rotate*90);
+			    holder.setTransform(holder.getTransform().combine(transform));
+			    DuoDungeonPlugin.logg("try rotate");
+			    posB0 = posB0.add(0, 0, DuoMap.tile_size-1);
+		    }
+            Operation operation = holder.createPaste(editSession)
+				            .to(posB0)
+				            // configure here
+				            .build();
+
 		    Operations.complete(operation);
 		} catch (WorldEditException e) {
 			// TODO Auto-generated catch block

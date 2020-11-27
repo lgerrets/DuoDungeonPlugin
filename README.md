@@ -43,11 +43,20 @@ Bugs:
 - deal with player exit (currently exceptions occur)
 
 Todos:
-- piece rotation
++ piece rotation
 - builder slow effect / give him several speed boots
 - checkpoints
 - life loss
 - default structures on map
 - mobs:
   - without helmet + fire resistance, to give runners fire on melee hit
+- fix builder actions
 
+Ideas:
+- enchantments
+  + lifesteal when low
+  - damage reduction when low
+  + gatherer (find more supplies when offered in chests)
+  - speed
+  - jump boost
+  - strength

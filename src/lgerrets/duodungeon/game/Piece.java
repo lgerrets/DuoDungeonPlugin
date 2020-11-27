@@ -69,6 +69,7 @@ public class Piece {
 	public static EnumMap<TetrisShape, Index2d[]> occupations = new EnumMap<TetrisShape, Index2d[]>(TetrisShape.class);
 	static {
 		Index2d[] tmp_o = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(1,1)};
+		//Index2d[] tmp_o = new Index2d[] {new Index2d(0,0)};
 		occupations.put(TetrisShape.O, tmp_o);
 
 		Index2d[] tmp_lr = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(0,2)};
@@ -146,6 +147,7 @@ public class Piece {
 	private int rndChest;
 	private ChestRarity rndRarity;
 	private int n_tiles;
+	private Coords3d[] my_chest_pos_relative;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_occupation00)
 	{
@@ -160,6 +162,7 @@ public class Piece {
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
 		rndChest = MyMath.RandomUInt(chest_pos_relative.get(shape)[rndTemplate].length);
 		rndRarity = MyMath.RandomChoice(Drops.rarity_drops.entrySet());
+		my_chest_pos_relative = chest_pos_relative.get(shape)[rndTemplate].clone();
 	}
 	
 	public Coords3d GetTemplateOrigin()
@@ -181,11 +184,15 @@ public class Piece {
 	{
 		map_occupation = map_occupation_;
 		this.map_occupation00 = map_occupation00;
+		DuoDungeonPlugin.logg(DuoMap.game.toString());
+		DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
+		DuoDungeonPlugin.logg(this.map_occupation00.toString());
 	}
 	
 	public static Piece SpawnPiece(int[][] map)
 	{
 		TetrisShape shape = RndTetrisShape();
+		//shape = TetrisShape.O;
 		boolean found = false;
 		Index2d idx = new Index2d(0,0);
 		int tries = 0;
@@ -217,18 +224,19 @@ public class Piece {
 	{
 		Coords3d chest_pos_abs;
 		// remove all but 1 chest
-		for (int i_chest=0; i_chest<chest_pos_relative.get(shape)[rndTemplate].length; i_chest+=1)
+		DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
+		for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
 		{
 			if (i_chest != rndChest)
 			{
-				chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(chest_pos_relative.get(shape)[rndTemplate][i_chest]);
+				chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(my_chest_pos_relative[i_chest]);
 				// TODO: take rotation into account
 				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
 			}
 		}
 		
 		// fill the chest
-		chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(chest_pos_relative.get(shape)[rndTemplate][rndChest]);
+		chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(my_chest_pos_relative[rndChest]);
 		// TODO: take rotation into account
 		Block block = DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z);
 		if (block.getType() != Material.CHEST)
@@ -347,5 +355,14 @@ public class Piece {
 			}
 		}
 		return founds;
+	}
+
+	public void updateRotation(boolean orientation) {
+		Coords3d rotation_center = new Coords3d(0,0,0);
+		Coords3d translation = new Coords3d(0,0,DuoMap.tile_size-1); // dirty hack
+		for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
+		{
+			my_chest_pos_relative[i_chest] = my_chest_pos_relative[i_chest].CalculateRotation(rotation_center, orientation).add(translation);
+		}
 	}
 }

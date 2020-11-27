@@ -63,6 +63,16 @@ public class Coords3d {
 		return "("+String.valueOf(x)+","+String.valueOf(y)+","+String.valueOf(z)+")";
 	}
 	
+	public Coords3d CalculateRotation(Coords3d center, boolean orientation)
+	{
+		Coords3d relative = new Coords3d(this.x - center.x, this.y - center.y, this.z - center.z);
+		if (!orientation)
+			relative = new Coords3d(- relative.z, relative.y, relative.x);
+		else
+			relative = new Coords3d(relative.z, relative.y, - relative.x);
+		return center.add(relative);
+	}
+	
 	static public Coords3d Index2dToCoords3d(Index2d idx, Coords3d origin)
 	{
 		return new Coords3d(origin.x + tile_size*idx.x,

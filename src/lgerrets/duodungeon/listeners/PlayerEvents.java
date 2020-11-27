@@ -42,7 +42,10 @@ public class PlayerEvents implements Listener {
 	    		return;
 	    	}
 	    	if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER)
-	    		DuoMap.game.SpawnNewPiece();
+	    	{
+	    		//DuoMap.game.SpawnNewPiece();
+	    		DuoMap.game.TryRotatePiece(true);
+	    	}
     	}
     }
 }

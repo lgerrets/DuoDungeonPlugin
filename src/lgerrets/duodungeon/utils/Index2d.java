@@ -20,7 +20,7 @@ public class Index2d {
 		z = Z;
 	}
 	
-	public Index2d CalculateRelative(int delta, Direction d)
+	public Index2d CalculateTranslation(int delta, Direction d)
 	{
 		int newx = x;
 		int newz = z;
@@ -31,6 +31,16 @@ public class Index2d {
 		else
 			newx += delta;
 		return new Index2d(newx, newz);
+	}
+	
+	public Index2d CalculateRotation(Index2d center, boolean orientation)
+	{
+		Index2d relative = new Index2d(this.x-center.x, this.z-center.z);
+		if (!orientation)
+			relative = new Index2d(-relative.z, relative.x);
+		else
+			relative = new Index2d(relative.z, -relative.x);
+		return center.add(relative);
 	}
 	
 	@Override
@@ -44,6 +54,11 @@ public class Index2d {
 	public Index2d add(Index2d obj)
 	{
 		return new Index2d(x+obj.x, z+obj.z);
+	}
+	
+	public String toString()
+	{
+		return "(" + String.valueOf(this.x) + "," + String.valueOf(this.z) + ")";
 	}
 	
 	static public Direction DeltasToDirection(double dx, double dz)
