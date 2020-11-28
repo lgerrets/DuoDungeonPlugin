@@ -30,7 +30,7 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 
 public class DuoMap {
 	
-	private int[][] map;
+	private StructureType[][] map;
 	private int[][] square5;
 	static public Coords3d dungeon_origin;
 	static private Coords3d pastebin;
@@ -67,12 +67,29 @@ public class DuoMap {
 		game = new DuoMap(true);
 	}
 	
+	public enum StructureType {
+	    FREE(0),
+	    PIECE(1),
+	    CHECKPOINT(2),
+	    BORDER(3),
+	    EMPTY(4),
+	    BOMB(5),
+	    HOSTILE(6),
+	    PEACEFUL(7)
+	    ;
+
+	    private final int id;
+	    StructureType(int id) { this.id = id; }
+	    public int getValue() { return id; }
+	}
+	
 	public DuoMap(boolean is_running)
 	{
 		this.is_running = is_running;
 		if (is_running)
 		{
-			map = new int[][] {
+			map = new StructureType[15][21];
+			/*{
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
 				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
@@ -89,7 +106,23 @@ public class DuoMap {
 				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
-			}; //15*21
+			}; //15*21*/
+			for (int x=0; x<map.length; x+=1)
+			{
+				for (int z=0; z<map[0].length; z+=1)
+				{
+					StructureType type;
+					if (z == 0 || z == map[0].length-1)
+						type = StructureType.BORDER;
+					else if (x == map.length-1)
+						type = StructureType.BORDER;
+					else if (x == 0 || x == map.length-2)
+						type = StructureType.CHECKPOINT;
+					else
+						type = StructureType.FREE;
+					this.SetMap(x, z, type);
+				}
+			}
 			square5 = new int[map.length][map[0].length]; // java initializes all values to 0
 			pieces = new ArrayList<Piece>();
 			ClearArea();
@@ -203,36 +236,38 @@ public class DuoMap {
 		BlockVector3 temp_3;
 		int volume = 0;
 		int dy;
-		BlockData mat;
+		BlockData mat = null;
 		for (int x=0 ; x<map.length ; x+=1)
 		{
 			for (int z=0 ; z<map[0].length ; z+=1)
 			{
-				switch(this.GetMap(x, z, -1))
+				switch(this.GetMap(x, z, DuoMap.StructureType.EMPTY))
 				{
-				case 0:
-					dy = max_height+not_placed_height;
-					mat = Material.AIR.createBlockData();
-					break;
-				case 2:
+
+				case CHECKPOINT:
 					dy = 2;
 					mat = Material.OBSIDIAN.createBlockData();
 					break;
-				case 3:
+				case BORDER:
 					dy = max_height;
 					mat = Material.WHITE_STAINED_GLASS.createBlockData();
 					break;
 				default:
-					dy = max_height;
-					mat = Material.AIR.createBlockData();
+					dy = -1;
 					break;
 				}
 				
 				temp_3 = Coords3d.Index2dToBlockVector3(new Index2d(x, z), dungeon_origin);
-				CuboidRegion region = new CuboidRegion(WEWorld, temp_3, temp_3.add(tile_size-1, dy, tile_size-1));
+				CuboidRegion region = new CuboidRegion(WEWorld, temp_3, temp_3.add(tile_size-1, max_height+not_placed_height, tile_size-1));
+				WEUtils.FillRegion(WEWorld, region, Material.AIR.createBlockData());
 				volume += region.getVolume();
 				
-				WEUtils.FillRegion(WEWorld, region, mat);
+				if (dy >= 0)
+				{
+					temp_3 = Coords3d.Index2dToBlockVector3(new Index2d(x, z), dungeon_origin);
+					region = new CuboidRegion(WEWorld, temp_3, temp_3.add(tile_size-1, dy, tile_size-1));	
+					WEUtils.FillRegion(WEWorld, region, mat);
+				}
 			}
 		}
 		
@@ -248,7 +283,7 @@ public class DuoMap {
 		{
 			Index2d newcoord = coord.CalculateTranslation(1, d); // calculate where this tile would go
 			newcoords[idx] = newcoord;
-			if (this.GetMap(newcoord.x,newcoord.z, 1) > 0) // the destination tile is occupied...
+			if (this.GetMap(newcoord.x,newcoord.z, DuoMap.StructureType.EMPTY) != DuoMap.StructureType.FREE) // the destination tile is occupied...
 			{
 				canMove = false;
 				for (Index2d other : moving_piece.map_occupation)
@@ -288,11 +323,11 @@ public class DuoMap {
 		
 		for (Index2d idx : piece.map_occupation)
 		{
-			this.SetMap(idx.x,idx.z,0);
+			this.SetMap(idx.x,idx.z,DuoMap.StructureType.FREE);
 		}
 		for (Index2d idx : destination)
 		{
-			this.SetMap(idx.x,idx.z,1);
+			this.SetMap(idx.x,idx.z,DuoMap.StructureType.PIECE);
 		}
 		piece.SetMapOccupation(destination, map_occupation00);
 	}
@@ -310,7 +345,7 @@ public class DuoMap {
 			{
 				newcoords[idx_other] = moving_piece.map_occupation[idx_other].CalculateRotation(center, orientation);
 				// (we obviously do not check collision between center and itself)
-				if (idx_other != idx_center && GetMap(newcoords[idx_other].x, newcoords[idx_other].z, 1) > 0)
+				if (idx_other != idx_center && GetMap(newcoords[idx_other].x, newcoords[idx_other].z, DuoMap.StructureType.EMPTY) != DuoMap.StructureType.FREE)
 				{
 					canMove = false; // found a collision ...
 					for (int maybe_same_piece=0; maybe_same_piece < moving_piece.map_occupation.length; maybe_same_piece+=1) // ... maybe it's with another tile of the current piece?
@@ -358,11 +393,11 @@ public class DuoMap {
 		
 		for (Index2d idx : piece.map_occupation)
 		{
-			this.SetMap(idx.x,idx.z,0);
+			this.SetMap(idx.x,idx.z,DuoMap.StructureType.FREE);
 		}
 		for (Index2d idx : map_occupation)
 		{
-			this.SetMap(idx.x,idx.z,1);
+			this.SetMap(idx.x,idx.z,DuoMap.StructureType.PIECE);
 		}
 		piece.updateRotation(orientation);
 		piece.SetMapOccupation(map_occupation, map_occupation00);
@@ -377,12 +412,12 @@ public class DuoMap {
 		}
 	}
 	
-	public void SetMap(int x, int z, int value)
+	public void SetMap(int x, int z, StructureType value)
 	{
 		map[x][z] = value;
 	}
 	
-	public int GetMap(int x, int z, int default_if_oob)
+	public StructureType GetMap(int x, int z, StructureType default_if_oob)
 	{
 		if (this.IsOutOfBounds(x, z))
 			return default_if_oob;
@@ -402,7 +437,7 @@ public class DuoMap {
 		{
 			for (int z = 0 ; z < map[0].length ; z+=1)
 			{
-				ret += String.valueOf(this.GetMap(x,z, -1));
+				ret += String.valueOf(this.GetMap(x,z, DuoMap.StructureType.EMPTY).getValue());
 			}
 			ret += "\n";
 		}
@@ -435,7 +470,7 @@ public class DuoMap {
 	
 	public void RemoveTileAt(int x, int z)
 	{
-		map[x][z] = 0;
+		map[x][z] = DuoMap.StructureType.FREE;
 		RemoveTileFromSquare5(x,z);
 	}
 	

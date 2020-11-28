@@ -21,6 +21,7 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.Drops.ChestRarity;
+import lgerrets.duodungeon.game.DuoMap.StructureType;
 import lgerrets.duodungeon.utils.Cooldown;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
@@ -217,7 +218,7 @@ public class Piece {
 		DuoDungeonPlugin.logg(this.map_occupation00.toString());
 	}
 	
-	public static Piece SpawnPiece(int[][] map)
+	public static Piece SpawnPiece(StructureType[][] map)
 	{
 		TetrisShape shape = RndTetrisShape();
 		//shape = TetrisShape.O;
@@ -241,10 +242,10 @@ public class Piece {
 		return piece;
 	}
 	
-	public int[][] InitUpdateMap(int[][] map)
+	public StructureType[][] InitUpdateMap(StructureType[][] map)
 	{
 		for (Index2d idx : map_occupation)
-			map[idx.x][idx.z] = 1;
+			map[idx.x][idx.z] = DuoMap.StructureType.PIECE;
 		return map;
 	}
 	
@@ -319,7 +320,7 @@ public class Piece {
 					{
 						if (DuoMap.world.getBlockAt(x, y+1, z).getType().equals(Material.AIR) && DuoMap.world.getBlockAt(x, y+2, z).getType().equals(Material.AIR))
 						{
-							if(!DuoMap.world.getBlockAt(x, y, z).getType().equals(Material.AIR))
+							if(!DuoMap.world.getBlockAt(x, y, z).getType().equals(Material.AIR) && !DuoMap.world.getBlockAt(x, y, z).getType().equals(Material.BARRIER))
 							{
 								spawnables.add(new Coords3d(x,y+1,z));
 							}
@@ -351,14 +352,14 @@ public class Piece {
 		is_placed = true;
 	}
 	
-	private static boolean MapIsFreeForTetrisShape(int[][] map, Index2d origin, TetrisShape shape_)
+	private static boolean MapIsFreeForTetrisShape(StructureType[][] map, Index2d origin, TetrisShape shape_)
 	{
 		for (Index2d offset : occupations.get(shape_))
 		{
 			Index2d idx = offset.add(origin);
 			if ((idx.x >= map.length) || (idx.z >= map[0].length))
 				return false;
-			if (map[idx.x][idx.z] > 0)
+			if (map[idx.x][idx.z] != DuoMap.StructureType.FREE)
 				return false;
 		}
 		return true;
