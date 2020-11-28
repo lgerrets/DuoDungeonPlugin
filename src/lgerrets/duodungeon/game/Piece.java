@@ -192,6 +192,11 @@ public class Piece {
 			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size,DuoMap.max_height,tile_size).toBlockVector3());
 			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.AIR.createBlockData());
 		}
+		// update occupation & square5 map (superstun)
+		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
+		{
+			DuoMap.game.RemoveTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);
+		}
 	}
 	
 	public Coords3d GetTemplateOrigin()
@@ -213,7 +218,6 @@ public class Piece {
 	{
 		map_occupation = map_occupation_;
 		this.map_occupation00 = map_occupation00;
-		DuoDungeonPlugin.logg(DuoMap.game.toString());
 		DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
 		DuoDungeonPlugin.logg(this.map_occupation00.toString());
 	}
@@ -242,11 +246,10 @@ public class Piece {
 		return piece;
 	}
 	
-	public StructureType[][] InitUpdateMap(StructureType[][] map)
+	public void UpdateMap(DuoMap.StructureType type)
 	{
 		for (Index2d idx : map_occupation)
-			map[idx.x][idx.z] = DuoMap.StructureType.PIECE;
-		return map;
+			DuoMap.game.SetMap(idx.x, idx.z, type);
 	}
 	
 	public void PlacePiece(Coords3d map_origin)
@@ -343,7 +346,7 @@ public class Piece {
 		for (DuoBuilder builder : DuoTeam.builder_players)
 			builder.updateCombo(0.2);
 		
-		// update square5 map (superstun)
+		// update occupation & square5 map (superstun)
 		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
 		{
 			DuoMap.game.PlaceTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);

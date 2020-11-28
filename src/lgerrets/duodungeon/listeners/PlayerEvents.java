@@ -67,7 +67,7 @@ public class PlayerEvents implements Listener {
     }
     
     @EventHandler
-    public void onLeftClick(PlayerInteractEvent e) {
+    public void onClick(PlayerInteractEvent e) {
     	if (DuoMap.game.IsRunning())
     	{
 	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
