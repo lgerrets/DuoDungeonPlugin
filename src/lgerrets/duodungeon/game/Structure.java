@@ -25,7 +25,6 @@ public class Structure {
 			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size,DuoMap.max_height+DuoMap.not_placed_height,tile_size).toBlockVector3());
 			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.AIR.createBlockData());
 		}
-		// update occupation & square5 map (superstun)
 		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
 		{
 			RemoveTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);

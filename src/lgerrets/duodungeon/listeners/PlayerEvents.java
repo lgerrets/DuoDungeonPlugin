@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
@@ -91,6 +92,29 @@ public class PlayerEvents implements Listener {
     	}
     }
     
+    @EventHandler
+    public void onSneak(PlayerToggleSneakEvent e) {
+    	if (DuoMap.game.IsRunning())
+    	{
+	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
+	    	if (p == null) {
+	    		DuoDungeonPlugin.logg("Player is null");
+	    		return;
+	    	}
+	    	if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER)
+	    	{
+	    		if (e.isSneaking())
+	    		{
+	    			DuoMap.game.EnableNextIsBomb();
+	    			e.setCancelled(true);
+	    		}
+	    	}
+    	}
+    }
+    
+    
+    /*
+     * //@EventHandler
     public void onBlockDestroy(BlockBreakEvent e) {
     	Player p = e.getPlayer();
     	if (p == null)
@@ -100,5 +124,5 @@ public class PlayerEvents implements Listener {
     	{
     		e.setCancelled(true);
     	}
-    }
+    }*/
 }

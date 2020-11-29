@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class DuoTeam {
 	public enum TeamType
@@ -13,13 +15,6 @@ public class DuoTeam {
 		NONE,
 		BUILDER,
 		RUNNER,
-	}
-	
-	public static EnumMap<TeamType, DuoTeam> teams = new EnumMap<>(TeamType.class);
-	static {
-		teams.put(TeamType.NONE, new DuoTeam(ChatColor.WHITE, TeamType.NONE));
-		teams.put(TeamType.BUILDER, new DuoTeam(ChatColor.GREEN, TeamType.BUILDER));
-		teams.put(TeamType.RUNNER, new DuoTeam(ChatColor.RED, TeamType.RUNNER));
 	}
 	
 	static public ArrayList<DuoNoteamer> none_players = new ArrayList<DuoNoteamer>(); 
@@ -30,6 +25,13 @@ public class DuoTeam {
 		all_players.put(TeamType.NONE, none_players);
 		all_players.put(TeamType.BUILDER, builder_players);
 		all_players.put(TeamType.RUNNER, runner_players);
+	}
+	
+	public static EnumMap<TeamType, DuoTeam> teams = new EnumMap<>(TeamType.class);
+	static {
+		teams.put(TeamType.NONE, new DuoTeam(ChatColor.WHITE, TeamType.NONE));
+		teams.put(TeamType.BUILDER, new DuoTeam(ChatColor.GREEN, TeamType.BUILDER));
+		teams.put(TeamType.RUNNER, new DuoTeam(ChatColor.RED, TeamType.RUNNER));
 	}
 	
 	public ChatColor color;
