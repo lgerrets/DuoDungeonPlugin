@@ -14,6 +14,11 @@ public class Index2d {
 	public int x; // x++ = go east
 	public int z; // z++ = go south
 	
+	public Index2d()
+	{
+		this(0,0);
+	}
+	
 	public Index2d(int X, int Z)
 	{
 		x = X;

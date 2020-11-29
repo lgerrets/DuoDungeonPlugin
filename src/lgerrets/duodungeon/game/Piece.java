@@ -28,7 +28,7 @@ import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.MyMath;
 import lgerrets.duodungeon.utils.WEUtils;
 
-public class Piece {
+public class Piece extends Structure {
 	public enum TetrisShape
 	{
 		O,
@@ -69,9 +69,7 @@ public class Piece {
 		int[][] tmp_i = {{1},{1},{1},{1}};
 		occupations.put(TetrisShape.I, tmp_i);
 	}*/
-	
-	private static int tile_size = DuoMap.tile_size;
-	
+		
 	public static EnumMap<TetrisShape, Index2d[]> occupations = new EnumMap<TetrisShape, Index2d[]>(TetrisShape.class);
 	static {
 		Index2d[] tmp_o = new Index2d[] {new Index2d(0,0), new Index2d(0,1), new Index2d(1,0), new Index2d(1,1)};
@@ -144,15 +142,11 @@ public class Piece {
 		}
 	}
 
-	private int rotation;
 	public TetrisShape shape;
-	public Index2d[] map_occupation;
-	public Index2d map_occupation00;
 	public Index2d[] clone_from;
 	private int rndTemplate;
 	private int rndChest;
 	private ChestRarity rndRarity;
-	private int n_tiles;
 	private Coords3d[] my_chest_pos_relative;
 	public boolean is_placed;
 	public boolean is_active;
@@ -178,6 +172,7 @@ public class Piece {
 		lifetime_cooldown = new Cooldown(ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime"), false);
 	}
 	
+	@Override
 	public void Delete()
 	{
 		PlaySound(Sound.BLOCK_STONE_BREAK, 5, 1);
@@ -186,17 +181,15 @@ public class Piece {
 		{
 			runner.piece = null;
 		}
-		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
-		{
-			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], DuoMap.dungeon_origin);
-			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size,DuoMap.max_height,tile_size).toBlockVector3());
-			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.AIR.createBlockData());
-		}
-		// update occupation & square5 map (superstun)
-		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
-		{
-			DuoMap.game.RemoveTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);
-		}
+		super.Delete();
+	}
+	
+	@Override
+	public void RemoveTileAt(int x, int z)
+	{
+		super.RemoveTileAt(x, z);
+		DuoMap.game.UpdateNeighbourPieces(x, z, -1);
+		DuoMap.game.RemoveTileFromSquare5(x,z, true);
 	}
 	
 	public Coords3d GetTemplateOrigin()
@@ -207,19 +200,6 @@ public class Piece {
 	static public Coords3d TemplateOrigin(TetrisShape shape, int i_template)
 	{
 		return template_origins.get(shape).add(0, 0, i_template*template_separator);
-	}
-	
-	public Piece() // OLD
-	{
-		
-	}
-	
-	public void SetMapOccupation(Index2d[] map_occupation_, Index2d map_occupation00)
-	{
-		map_occupation = map_occupation_;
-		this.map_occupation00 = map_occupation00;
-		DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
-		DuoDungeonPlugin.logg(this.map_occupation00.toString());
 	}
 	
 	public static Piece SpawnPiece(StructureType[][] map)
@@ -244,12 +224,6 @@ public class Piece {
 		DuoDungeonPlugin.logg("Spawning piece " + shape.toString());
 		Piece piece = new Piece(shape, idx);
 		return piece;
-	}
-	
-	public void UpdateMap(DuoMap.StructureType type)
-	{
-		for (Index2d idx : map_occupation)
-			DuoMap.game.SetMap(idx.x, idx.z, type);
 	}
 	
 	public void PlacePiece(Coords3d map_origin)
@@ -373,23 +347,6 @@ public class Piece {
 		int idx = MyMath.RandomUInt(all_shapes.size());
 		return all_shapes.get(idx);
 	}
-	
-	private static ArrayList<Coords3d> SearchBlock(Coords3d origin, Material mat)
-	{
-		ArrayList<Coords3d> founds = new ArrayList<Coords3d>(); 
-		for(int x=origin.x; x<origin.x+tile_size ; x+=1)
-		{
-			for (int y=origin.y; y<origin.y+DuoMap.max_height; y+=1)
-			{
-				for(int z=origin.z; z<origin.z+tile_size ; z+=1)
-				{
-					if (DuoMap.world.getBlockAt(x, y, z).getType().equals(mat))
-						founds.add(new Coords3d(x,y,z));
-				}
-			}
-		}
-		return founds;
-	}
 
 	public void updateRotation(boolean orientation) {
 		Coords3d rotation_center = new Coords3d(0,0,0);
@@ -398,18 +355,6 @@ public class Piece {
 		{
 			my_chest_pos_relative[i_chest] = my_chest_pos_relative[i_chest].CalculateRotation(rotation_center, orientation).add(translation);
 		}
-	}
-	
-	public boolean HasCoords3d(Coords3d coords)
-	{
-		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
-		{
-			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], DuoMap.dungeon_origin);
-			if (coords.x >= tile_origin.x && coords.z >= tile_origin.z && 
-					coords.x < tile_origin.x + DuoMap.tile_size && coords.z < tile_origin.z + DuoMap.tile_size)
-				return true;
-		}
-		return false;
 	}
 	
 	public void PlaySound(Sound s, int volume, int pitch)

@@ -59,7 +59,7 @@ public class PlayerEvents implements Listener {
 		        	double dx = e.getTo().getX() - e.getFrom().getX();
 		        	double dz = e.getTo().getZ() - e.getFrom().getZ();
 		        	Direction dir = Index2d.DeltasToDirection(dx, dz);
-		        	DuoMap.game.TryMovePiece(dir);
+		        	DuoMap.game.TryMoveStruct(dir);
 		            builder_move_cooldown.reset();
 	    		}
 	        }
@@ -82,7 +82,7 @@ public class PlayerEvents implements Listener {
 		    		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
 		    			DuoMap.game.TryRotatePiece(true); // true stands for trigo orientation
 		    		else if (e.getClickedBlock() != null || e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
-		    			DuoMap.game.SpawnNewPiece();
+		    			DuoMap.game.SpawnNewStruct();
 		    		else
 		    			return;
 		    		builder_act_cooldown.reset();

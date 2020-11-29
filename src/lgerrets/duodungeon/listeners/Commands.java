@@ -22,7 +22,7 @@ public class Commands implements CommandExecutor  {
     	else if (args[0].equalsIgnoreCase("spawn"))
     	{
     		if (DuoMap.game.IsRunning())
-    			DuoMap.game.SpawnNewPiece();
+    			DuoMap.game.SpawnNewStruct();
     	}
     	else if (args[0].equalsIgnoreCase("team"))
     	{

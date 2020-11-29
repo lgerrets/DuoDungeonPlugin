@@ -29,20 +29,33 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 
 public class DuoMap {
-	
-	private StructureType[][] map;
-	private int[][] square5;
-	private int[][] neighbour_pieces;
+	// misc
+	public static ArrayList<Piece> pieces;
+	private boolean is_running;
+	static public DuoMap game = new DuoMap(false);
+
+	// building stuff
 	static public Coords3d dungeon_origin;
 	static private Coords3d pastebin;
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
 	static public int max_height = ConfigManager.DDConfig.getInt("max_height");;
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
-	static private int not_placed_height = 10;
-	public static ArrayList<Piece> pieces;
-	private boolean is_running;
+	static public int not_placed_height = 10;
+	static Coords3d bomb_origin = Coords3d.FromWaypoint("bomb");
+	
+	// moving stuff
+	private StructureType moving_type; // can be PIECE or BOMB
+	private Structure moving_struct; // can be PIECE or BOMB
 	private Piece moving_piece = null;
+	private boolean next_is_bomb = false;
+	private Bomb moving_bomb = null;
+	
+	// maps
+	private StructureType[][] map;
+	private int[][] square5;
+	private boolean[][] already_decreased_tile_from_square5;
+	private int[][] neighbour_pieces;
 	static private int square5_size = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("superstun_squaresize");
 	static {
 		if (square5_size % 2 == 0)
@@ -60,9 +73,7 @@ public class DuoMap {
 								pastebin_wp.getInt("Y"),
 								pastebin_wp.getInt("Z"));
 	}
-	
-	static public DuoMap game = new DuoMap(false);
-	
+		
 	static public void InitializeDungeon()
 	{
 		new DuoMap(true);
@@ -128,10 +139,13 @@ public class DuoMap {
 				}
 			}
 			square5 = new int[map.length][map[0].length]; // java initializes all values to 0
+			already_decreased_tile_from_square5 = new boolean[map.length][map[0].length];
 			neighbour_pieces = new int[map.length][map[0].length];
 			pieces = new ArrayList<Piece>();
 			ClearArea();
-			SpawnNewPiece();
+			moving_type = StructureType.PIECE_UP;
+			next_is_bomb = false;
+			SpawnNewStruct();
 			
 	        Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {
 	            @Override
@@ -187,8 +201,10 @@ public class DuoMap {
 		return is_running;
 	}
 	
-	public void SpawnNewPiece()
+	public void SpawnNewStruct()
 	{
+		if (this.moving_type != StructureType.PIECE_UP)
+			return; // cannot spawn a struct while a bomb is in play
 		if (moving_piece != null)
 		{
 			if(!this.CanPlacePiece())
@@ -213,30 +229,36 @@ public class DuoMap {
 			moving_piece.PlacePiece(dungeon_origin);
 		}
 		
+		if(this.next_is_bomb)
 		{
-	
-			Piece piece = Piece.SpawnPiece(map);
-			piece.UpdateMap(StructureType.PIECE_UP);
-			pieces.add(piece);
-			
-			int n_tiles = piece.map_occupation.length;
-			BlockVector3[] piece_from = new BlockVector3[n_tiles];
-			BlockVector3[] pastebins = new BlockVector3[n_tiles];
-			BlockVector3[] piece_dest = new BlockVector3[n_tiles];
-			Coords3d template_origin = piece.GetTemplateOrigin();
-			for (int idx=0; idx<n_tiles; idx+=1)
-			{
-				piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.clone_from[idx], template_origin);
-				pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
-				piece_dest[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
-			}
-			
-			MoveTiles(piece_from, pastebins, false, 0);
-			MoveTiles(pastebins, piece_dest, true, 0);
-			moving_piece = piece;
-	
-			DuoDungeonPlugin.logg(this.toString());
+			this.SpawnBomb();
+			return;
 		}
+		
+
+		Piece piece = Piece.SpawnPiece(map);
+		piece.UpdateMap(StructureType.PIECE_UP);
+		pieces.add(piece);
+		
+		int n_tiles = piece.map_occupation.length;
+		BlockVector3[] piece_from = new BlockVector3[n_tiles];
+		BlockVector3[] pastebins = new BlockVector3[n_tiles];
+		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
+		Coords3d template_origin = piece.GetTemplateOrigin();
+		for (int idx=0; idx<n_tiles; idx+=1)
+		{
+			piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.clone_from[idx], template_origin);
+			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
+			piece_dest[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
+		}
+		
+		MoveTiles(piece_from, pastebins, false, 0);
+		MoveTiles(pastebins, piece_dest, true, 0);
+		moving_piece = piece;
+		moving_struct = piece;
+		moving_type = StructureType.PIECE_UP;
+
+		DuoDungeonPlugin.logg(this.toString());
 	}
 	
 	public void ClearArea()
@@ -283,30 +305,99 @@ public class DuoMap {
 		System.out.println("Cleared " + String.valueOf(volume) + " Blocks for the dungeon");
 	}
 	
-	public void TryMovePiece(Direction d)
+	public void SpawnBomb()
 	{
-		boolean canMove = true;
-		Index2d[] newcoords = new Index2d[moving_piece.map_occupation.length];
+		boolean found = false;
+		int tries = 0;
+		Index2d bomb_occupation = new Index2d();
+		while (!found)
+		{
+			tries += 1;
+			if (tries > 100)
+			{
+				DuoDungeonPlugin.logg("Unable to place piece, dungeon is too full... Will likely crash!");
+				return;
+			}
+			bomb_occupation.x = MyMath.RandomUInt(map.length);
+			bomb_occupation.z = MyMath.RandomUInt(map[0].length);
+			found = this.GetMap(bomb_occupation.x, bomb_occupation.z, StructureType.EMPTY) == StructureType.FREE;
+		}
+		moving_bomb = new Bomb(bomb_occupation);
+		moving_struct = moving_bomb;
+		moving_bomb.UpdateMap(StructureType.BOMB);
+		moving_type = StructureType.BOMB;
+				
+		BlockVector3[] piece_from = new BlockVector3[1];
+		BlockVector3[] pastebins = new BlockVector3[1];
+		BlockVector3[] piece_dest = new BlockVector3[1];
+		Coords3d template_origin = bomb_origin;
+		piece_from[0] = Coords3d.Index2dToBlockVector3(new Index2d(0,0), template_origin);
+		pastebins[0] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + 0*tile_size)).toBlockVector3();
+		piece_dest[0] = Coords3d.Index2dToBlockVector3(bomb_occupation, dungeon_origin.add(0,0*not_placed_height,0));
+		
+		MoveTiles(piece_from, pastebins, false, 0);
+		MoveTiles(pastebins, piece_dest, true, 0);
+	}
+	
+	public void TryMoveStruct(Direction d)
+	{
+		StructureType blocking = StructureType.FREE; // will be in order of priority: PEACEFUL, EMPTY, FREE
+		Index2d[] newcoords = new Index2d[moving_struct.map_occupation.length];
 		int idx = 0;
-		for (Index2d coord : moving_piece.map_occupation) // loop through each tile of this piece
+		for (Index2d coord : moving_struct.map_occupation) // loop through each tile of this piece
 		{
 			Index2d newcoord = coord.CalculateTranslation(1, d); // calculate where this tile would go
 			newcoords[idx] = newcoord;
 			StructureType found = this.GetMap(newcoord.x,newcoord.z, DuoMap.StructureType.EMPTY);
-			if (found != StructureType.FREE && found != StructureType.PIECE_UP) // the destination tile is occupied...
+			if (found == StructureType.PEACEFUL)
 			{
-				canMove = false;
+				blocking = StructureType.PEACEFUL;
+				break;
+			}
+			else if (found != StructureType.FREE && found != StructureType.PIECE_UP) // the destination tile is occupied...
+			{
+				blocking = StructureType.EMPTY;
 				break;
 			}
 			idx += 1;
 		}
-		if (canMove)
+		
+		switch (this.moving_type)
 		{
-			MovePiece(moving_piece, newcoords, moving_piece.map_occupation00.CalculateTranslation(1,d), true);
+		case PIECE_UP:
+			switch (blocking)
+			{
+			case FREE:
+				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true);
+				break;
+			case PEACEFUL:
+				// todo: reset piece at spawning pos
+				break;
+			default: // do nothing
+				break;
+			}
+			break;
+		case BOMB:
+			switch (blocking)
+			{
+			case PEACEFUL:
+				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true);
+				moving_struct.Delete();
+				break;
+			case FREE:
+				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true);
+				break;
+			default: // do nothing
+				break;
+			}
+			break;
+		default:
+			DuoDungeonPlugin.logg("WARNING: reached unimplemented default in switch");
+			break;
 		}
 	}
 	
-	public void MovePiece(Piece piece, Index2d[] destination, Index2d map_occupation00, boolean cut)
+	public void MoveStruct(Structure piece, Index2d[] destination, Index2d map_occupation00, boolean cut)
 	{
 		int n_tiles = piece.map_occupation.length;
 		BlockVector3[] piece_from = new BlockVector3[n_tiles];
@@ -424,6 +515,23 @@ public class DuoMap {
 			}
 			ret += "\n";
 		}
+		
+		ret += "\n\n" + this.Square5MapToString();
+
+		return ret;
+	}
+	
+	public String Square5MapToString()
+	{
+		String ret = "";
+		for (int x = map.length-1; x >= 0 ; x-=1)
+		{
+			for (int z = 0 ; z < map[0].length ; z+=1)
+			{
+				ret += String.valueOf(square5[x][z]);
+			}
+			ret += "\n";
+		}
 		return ret;
 	}
 	
@@ -438,11 +546,11 @@ public class DuoMap {
 				square5[x_square5_center][z_square5_center] += 1;
 				if (square5[x_square5_center][z_square5_center] == square5_size*square5_size)
 				{
-					for(int x_tile2=MyMath.Max(x_tile-(square5_size-1)/2, 0); x_tile2<=MyMath.Min(x_tile+(square5_size-1)/2,square5.length); x_tile2+=1)
+					for(int x_tile2=MyMath.Max(x_square5_center-(square5_size-1)/2, 0); x_tile2<=MyMath.Min(x_square5_center+(square5_size-1)/2,square5.length); x_tile2+=1)
 					{
-						for(int z_tile2=MyMath.Max(z_tile-(square5_size-1)/2, 0); z_tile2<=MyMath.Min(z_tile+(square5_size-1)/2,square5.length); z_tile2+=1)
+						for(int z_tile2=MyMath.Max(z_square5_center-(square5_size-1)/2, 0); z_tile2<=MyMath.Min(z_square5_center+(square5_size-1)/2,square5.length); z_tile2+=1)
 						{
-							RemoveTileFromSquare5(x_tile2, z_tile2);
+							RemoveTileFromSquare5(x_tile2, z_tile2, false);
 						}
 					}
 					// stun all mobs
@@ -452,15 +560,22 @@ public class DuoMap {
 		}
 	}
 	
-	public void RemoveTileAt(int x, int z)
+	public void RemoveTileFromSquare5(int x, int z, boolean removed_because_piece_destroyed)
 	{
-		map[x][z] = DuoMap.StructureType.FREE;
-		UpdateNeighbourPieces(x, z, -1);
-		RemoveTileFromSquare5(x,z);
-	}
-	
-	public void RemoveTileFromSquare5(int x, int z)
-	{
+		if(already_decreased_tile_from_square5[x][z]) {
+			if(removed_because_piece_destroyed)
+			{
+				already_decreased_tile_from_square5[x][z] = false;
+				return;
+			}
+			else
+				DuoDungeonPlugin.logg("WARNING: this case should never happen: trying to decrease square5 twice");
+		}
+		else {
+			if(!removed_because_piece_destroyed)
+				already_decreased_tile_from_square5[x][z] = true;
+		}
+			
 		for(int xx=MyMath.Max(x-(square5_size-1)/2, 0); xx<=MyMath.Min(x+(square5_size-1)/2,square5.length); xx+=1)
 		{
 			for(int zz=MyMath.Max(z-(square5_size-1)/2, 0); zz<=MyMath.Min(z+(square5_size-1)/2,square5.length); zz+=1)

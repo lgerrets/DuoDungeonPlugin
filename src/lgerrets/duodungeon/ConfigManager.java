@@ -65,6 +65,7 @@ public class ConfigManager {
 		setDefaultWaypointIfNotSet(waypoints, "tetris_s");
 		setDefaultWaypointIfNotSet(waypoints, "tetris_t");
 		setDefaultWaypointIfNotSet(waypoints, "tetris_i");
+		setDefaultWaypointIfNotSet(waypoints, "bomb");
 		
 		ConfigurationSection controls = setDefaultSectionIfNotSet(DDConfig, "Controls");
 		setDefaultIfNotSet(controls, "builder_move_cooldown", 5);
