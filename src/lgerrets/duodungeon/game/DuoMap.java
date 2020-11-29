@@ -385,10 +385,12 @@ public class DuoMap {
 			switch (blocking)
 			{
 			case FREE:
-				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true);
+				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true, 0);
 				break;
 			case PEACEFUL:
-				// todo: reset piece at spawning pos
+				// reset piece to its initial position
+				MoveStruct(moving_struct, moving_piece.map_occupation_first, moving_piece.map_occupation00_first.CalculateTranslation(1,d), true, MyMath.Mod(-moving_piece.rotation, 4));
+				moving_piece.ResetPos();
 				break;
 			default: // do nothing
 				break;
@@ -398,13 +400,14 @@ public class DuoMap {
 			switch (blocking)
 			{
 			case PEACEFUL:
-				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true);
+				// explode bomb
+				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true, 0);
 				moving_struct.Delete();
 				this.moving_type = StructureType.PIECE_UP;
 				this.SpawnNewStruct();
 				break;
 			case FREE:
-				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true);
+				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true, 0);
 				break;
 			default: // do nothing
 				break;
@@ -416,7 +419,7 @@ public class DuoMap {
 		}
 	}
 	
-	public void MoveStruct(Structure piece, Index2d[] destination, Index2d map_occupation00, boolean cut)
+	public void MoveStruct(Structure piece, Index2d[] destination, Index2d map_occupation00, boolean cut, int rotation)
 	{
 		int n_tiles = piece.map_occupation.length;
 		BlockVector3[] piece_from = new BlockVector3[n_tiles];
@@ -430,7 +433,7 @@ public class DuoMap {
 		}
 		
 		MoveTiles(piece_from, pastebins, cut, 0);
-		MoveTiles(pastebins, piece_dest, true, 0);
+		MoveTiles(pastebins, piece_dest, true, rotation);
 		
 		piece.UpdateMap(StructureType.FREE);
 		piece.SetMapOccupation(destination, map_occupation00);

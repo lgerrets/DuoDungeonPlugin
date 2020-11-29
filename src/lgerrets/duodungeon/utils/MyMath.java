@@ -113,4 +113,11 @@ public class MyMath {
 		else
 			return b;
 	}
+	
+	public static int Mod(int a, int b)
+	{
+		if (a>=0)
+			return a%b;
+		return (a%b)+b;
+	}
 }

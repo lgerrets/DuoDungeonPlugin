@@ -144,6 +144,9 @@ public class Piece extends Structure {
 
 	public TetrisShape shape;
 	public Index2d[] clone_from;
+	public Index2d map_occupation00_first;
+	public Index2d[] map_occupation_first;
+	public int rotation;
 	private int rndTemplate;
 	private int rndChest;
 	private ChestRarity rndRarity;
@@ -157,10 +160,10 @@ public class Piece extends Structure {
 	{
 		shape = tetris_shape;
 		n_tiles = occupations.get(tetris_shape).length;
-		map_occupation = new Index2d[n_tiles];
-		this.map_occupation00 = map_occupation00;
+		map_occupation_first = new Index2d[n_tiles];
+		this.map_occupation00_first = map_occupation00;
 		for (int i=0; i<n_tiles; i+=1)
-			map_occupation[i] = occupations.get(tetris_shape)[i].add(map_occupation00);
+			map_occupation_first[i] = occupations.get(tetris_shape)[i].add(map_occupation00);
 		clone_from = occupations.get(shape);
 		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
@@ -170,6 +173,17 @@ public class Piece extends Structure {
 		is_placed = false;
 		players = new ArrayList<DuoRunner>();
 		lifetime_cooldown = new Cooldown(ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime"), false);
+		ResetPos();
+	}
+	
+	public void ResetPos()
+	{
+		this.map_occupation00 = map_occupation00_first;
+		map_occupation = map_occupation_first.clone();
+		int old_rotation = rotation;
+		for (int i=0; i<MyMath.Mod(-old_rotation, 4); i+=1)
+			updateRotation(true);
+		rotation = 0;
 	}
 	
 	@Override
@@ -228,6 +242,10 @@ public class Piece extends Structure {
 	
 	public void PlacePiece(Coords3d map_origin)
 	{
+		// compute rotation stuff
+		/*for (int i=0; i<MyMath.Mod(rotation, 4); i+=1)
+			updateRotation(false);*/
+		
 		Coords3d chest_pos_abs;
 		// remove all but 1 chest
 		DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
@@ -349,12 +367,14 @@ public class Piece extends Structure {
 	}
 
 	public void updateRotation(boolean orientation) {
+		rotation += 1;
 		Coords3d rotation_center = new Coords3d(0,0,0);
 		Coords3d translation = new Coords3d(0,0,DuoMap.tile_size-1); // dirty hack
 		for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
 		{
 			my_chest_pos_relative[i_chest] = my_chest_pos_relative[i_chest].CalculateRotation(rotation_center, orientation).add(translation);
 		}
+		DuoDungeonPlugin.logg(my_chest_pos_relative[0].toString());
 	}
 	
 	public void PlaySound(Sound s, int volume, int pitch)

@@ -26,42 +26,54 @@ import lgerrets.duodungeon.game.DuoMap;
 public class WEUtils {
 	static public void CopyRegion(com.sk89q.worldedit.world.World world, BlockVector3 posA0, BlockVector3 posA1, BlockVector3 posB0, boolean cut, int rotate)
 	{
-		CuboidRegion region = new CuboidRegion(world, posA0, posA1);
-		BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
-
-		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1)) {
-		    ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
-		        editSession, region, clipboard, region.getMinimumPoint()
-		    );
-		    // configure here
-		    if (cut)
-		    	forwardExtentCopy.setSourceFunction(new BlockReplace(editSession, BukkitAdapter.adapt(Material.AIR.createBlockData())));
-		    Operations.complete(forwardExtentCopy);
-		} catch (WorldEditException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(rotate > 1)
+		{
+			for (int i=0; i<rotate; i+=1)
+				CopyRegion(world, posA0, posA1, posB0, cut, 1);
 		}
-		
-		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1)) {
-			ClipboardHolder holder = new ClipboardHolder(clipboard);
-
-		    if (rotate != 0) // should be -1 or 0 or 1 (1 for positive orientation)
-		    {
-			    AffineTransform transform = new AffineTransform();
-			    transform = transform.rotateY(rotate*90);
-			    holder.setTransform(holder.getTransform().combine(transform));
-			    DuoDungeonPlugin.logg("try rotate");
-			    posB0 = posB0.add(0, 0, DuoMap.tile_size-1);
-		    }
-            Operation operation = holder.createPaste(editSession)
-				            .to(posB0)
-				            // configure here
-				            .build();
-
-		    Operations.complete(operation);
-		} catch (WorldEditException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		else if (rotate < -1)
+		{
+			for (int i=0; i<-rotate; i+=1)
+				CopyRegion(world, posA0, posA1, posB0, cut, -1);
+		}
+		else {
+			CuboidRegion region = new CuboidRegion(world, posA0, posA1);
+			BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+	
+			try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1)) {
+			    ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(
+			        editSession, region, clipboard, region.getMinimumPoint()
+			    );
+			    // configure here
+			    if (cut)
+			    	forwardExtentCopy.setSourceFunction(new BlockReplace(editSession, BukkitAdapter.adapt(Material.AIR.createBlockData())));
+			    Operations.complete(forwardExtentCopy);
+			} catch (WorldEditException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(world, -1)) {
+				ClipboardHolder holder = new ClipboardHolder(clipboard);
+	
+			    if (rotate != 0) // should be -1 or 0 or 1 (1 for positive orientation)
+			    {
+				    AffineTransform transform = new AffineTransform();
+				    transform = transform.rotateY(rotate*90);
+				    holder.setTransform(holder.getTransform().combine(transform));
+				    DuoDungeonPlugin.logg("try rotate");
+				    posB0 = posB0.add(0, 0, DuoMap.tile_size-1);
+			    }
+	            Operation operation = holder.createPaste(editSession)
+					            .to(posB0)
+					            // configure here
+					            .build();
+	
+			    Operations.complete(operation);
+			} catch (WorldEditException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
