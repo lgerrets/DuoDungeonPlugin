@@ -28,13 +28,15 @@ public class WEUtils {
 	{
 		if(rotate > 1)
 		{
-			for (int i=0; i<rotate; i+=1)
-				CopyRegion(world, posA0, posA1, posB0, cut, 1);
+			for (int i=1; i<rotate; i+=1)
+				CopyRegion(world, posA0, posA1, posA0, cut, 1); // copy in-place
+			CopyRegion(world, posA0, posA1, posB0, cut, 1); // ... and finally to the destination
 		}
 		else if (rotate < -1)
 		{
-			for (int i=0; i<-rotate; i+=1)
-				CopyRegion(world, posA0, posA1, posB0, cut, -1);
+			for (int i=1; i<-rotate; i+=1)
+				CopyRegion(world, posA0, posA1, posA0, cut, -1); // copy in-place
+			CopyRegion(world, posA0, posA1, posB0, cut, -1); // ... and finally to the destination
 		}
 		else {
 			CuboidRegion region = new CuboidRegion(world, posA0, posA1);
