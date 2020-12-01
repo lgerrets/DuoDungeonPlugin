@@ -187,7 +187,7 @@ public class DuoMap {
 		        			else if (state < 0) {}
 		        			else
 		        			{
-		        				piece.PlaySound(Sound.ENTITY_ARMOR_STAND_HIT, 5, state);
+		        				piece.PlaySound(Sound.ENTITY_ARMOR_STAND_HIT, state);
 		        			}
 	            		}
 	            		for (Piece piece : to_delete)

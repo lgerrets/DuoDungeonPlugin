@@ -6,6 +6,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -155,6 +156,7 @@ public class Piece extends Structure {
 	public boolean is_active;
 	public Cooldown lifetime_cooldown;
 	public ArrayList<DuoRunner> players;
+	public Coords3d placed_pos;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_occupation00)
 	{
@@ -189,7 +191,7 @@ public class Piece extends Structure {
 	@Override
 	public void Delete()
 	{
-		PlaySound(Sound.BLOCK_STONE_BREAK, 5, 1);
+		PlaySound(Sound.BLOCK_STONE_BREAK, 1);
 		DuoMap.pieces.remove(this);
 		for (DuoRunner runner : players)
 		{
@@ -245,6 +247,14 @@ public class Piece extends Structure {
 		// compute rotation stuff
 		/*for (int i=0; i<MyMath.Mod(rotation, 4); i+=1)
 			updateRotation(false);*/
+		
+		// compute approx center of piece
+		this.placed_pos = new Coords3d(0,0,0);
+		for (Index2d idx : this.map_occupation)
+		{
+			this.placed_pos = this.placed_pos.add(Coords3d.Index2dToCoords3d(idx, map_origin));
+		}
+		this.placed_pos = this.placed_pos.scale(1.0/this.n_tiles);
 		
 		Coords3d chest_pos_abs;
 		// remove all but 1 chest
@@ -377,12 +387,22 @@ public class Piece extends Structure {
 		DuoDungeonPlugin.logg(my_chest_pos_relative[0].toString());
 	}
 	
-	public void PlaySound(Sound s, int volume, int pitch)
+	public void PlaySound(Sound s, int pitch)
 	{
-		for (DuoRunner runner : players)
+		Location loc = this.placed_pos.toLocation(DuoMap.world);
+		double volume;
+		for (DuoRunner runner : DuoTeam.runner_players)
 		{
 			Player p = runner.getDuoPlayer().getPlayer();
-			p.playSound(p.getLocation().add(0, -10, 0), s, volume, pitch);
+			if (runner.piece == this)
+				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_near");
+			else
+				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_active");
+			if (loc.distance(p.getLocation()) < tile_size*3)
+			{
+				DuoDungeonPlugin.logg("Distance to sound:" + loc.distance(p.getLocation()));
+				p.playSound(loc, s, (float) volume, pitch);
+			}
 		}
 	}
 }

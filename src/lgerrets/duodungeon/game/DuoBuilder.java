@@ -28,6 +28,7 @@ public class DuoBuilder extends DuoTeammate {
             	}
             }
         }, 0, 1);
+		type = DuoTeam.TeamType.BUILDER;
 	}
 	
 	public void updateCombo(double delta) {

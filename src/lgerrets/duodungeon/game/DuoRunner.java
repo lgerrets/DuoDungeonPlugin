@@ -24,18 +24,18 @@ public class DuoRunner extends DuoTeammate {
         public void run() {
         	if (DuoMap.game.IsRunning())
         	{
+        		Coords3d pos = new Coords3d(player.getDuoPlayer().getPlayer().getLocation());
+        		if (player.piece != null && player.piece.HasCoords3d(pos))
+        			return;
     			for (Piece p : DuoMap.pieces)
     			{
-    				if (p.HasCoords3d(new Coords3d(player.getDuoPlayer().getPlayer().getLocation())))
+    				if (p.HasCoords3d(pos))
     				{
-    					if (player.piece != p)
-    					{
-    						if (player.piece != null)
-    							player.piece.players.remove(this);
-    						player.piece = p;
-    						p.players.add(player);
-    						break;
-    					}
+						if (player.piece != null)
+							player.piece.players.remove(player);
+						player.piece = p;
+						p.players.add(player);
+						break;
     				}
     			}
         	}
@@ -47,6 +47,7 @@ public class DuoRunner extends DuoTeammate {
 	public DuoRunner(DuoPlayer player) {
 		super(player);
 		piece = null;
+		type = DuoTeam.TeamType.RUNNER;
 		
         Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new TrackActivePiece(this), 0, 1);
 	}
@@ -57,6 +58,14 @@ public class DuoRunner extends DuoTeammate {
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.GOLD_NUGGET);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.ARROW);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.BREAD);
+	}
+	
+	@Override
+	public void Unregister()
+	{
+		super.Unregister();
+		if (this.piece != null)
+			this.piece.players.remove(this);
 	}
 	
 	static public void Reset()

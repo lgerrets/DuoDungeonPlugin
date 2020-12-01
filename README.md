@@ -45,7 +45,8 @@ Bugs:
 Todos:
 - checkpoints
 - life loss
-- default structures on map
++ default structures on map
++ missile
 - mobs:
   - without helmet + fire resistance, to give runners fire on melee hit
   - no natural mob spawn
@@ -56,6 +57,7 @@ Todos:
 Ideas:
 - enchantments
   - damage reduction when low
+  - damage dodge chance when sprinting
   - speed
   - jump boost
   - strength

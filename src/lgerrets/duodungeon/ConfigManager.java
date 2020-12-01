@@ -75,6 +75,10 @@ public class ConfigManager {
 		setDefaultIfNotSet(controls, "builder_act_cooldown", 3);
 		//setDefaultIfNotSet(controls, "builder_resetpos_cooldown", 20);
 		
+		ConfigurationSection ambience = setDefaultSectionIfNotSet(DDConfig, "ambience");
+		setDefaultIfNotSet(ambience, "volume_piece_near", 0.5);
+		setDefaultIfNotSet(ambience, "volume_piece_active", 1.0);
+		
 		if(do_save > 0)
 			saveMainConfig();
 	}

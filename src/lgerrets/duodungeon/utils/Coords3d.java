@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import com.sk89q.worldedit.math.BlockVector3;
 
 import lgerrets.duodungeon.ConfigManager;
+import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DuoMap;
 
 public class Coords3d {
@@ -26,6 +27,13 @@ public class Coords3d {
 		x = X;
 		y = Y;
 		z = Z;
+	}
+	
+	public Coords3d(double X, double Y, double Z)
+	{
+		x = (int) X;
+		y = (int) Y;
+		z = (int) Z;
 	}
 	
 	public Coords3d(Location loc)
@@ -61,6 +69,11 @@ public class Coords3d {
 	public Coords3d add(int X, int Y, int Z)
 	{
 		return new Coords3d(x+X, y+Y, z+Z);
+	}
+	
+	public Coords3d scale(double m)
+	{
+		return new Coords3d(x*m, y*m, z*m);
 	}
 	
 	public String toString()

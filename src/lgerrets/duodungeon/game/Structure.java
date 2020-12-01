@@ -22,7 +22,7 @@ public class Structure {
 		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
 		{
 			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], DuoMap.dungeon_origin);
-			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size,DuoMap.max_height+DuoMap.not_placed_height,tile_size).toBlockVector3());
+			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size-1,DuoMap.max_height+DuoMap.not_placed_height,tile_size-1).toBlockVector3());
 			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.AIR.createBlockData());
 		}
 		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)

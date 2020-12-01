@@ -63,7 +63,7 @@ public class DuoTeam {
 		{
 			if (teammate.getDuoPlayer().equals(p))
 			{
-				all_players.get(teamType).remove(teammate);
+				teammate.Unregister();
 				break;
 			}
 		}
