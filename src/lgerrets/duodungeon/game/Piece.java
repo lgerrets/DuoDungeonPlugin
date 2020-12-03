@@ -6,10 +6,15 @@ import java.util.EnumMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -255,6 +260,7 @@ public class Piece extends Structure {
 			this.placed_pos = this.placed_pos.add(Coords3d.Index2dToCoords3d(idx, map_origin));
 		}
 		this.placed_pos = this.placed_pos.scale(1.0/this.n_tiles);
+		this.placed_pos = this.placed_pos.add(tile_size/2, 0, tile_size/2);
 		
 		Coords3d chest_pos_abs;
 		// remove all but 1 chest
@@ -347,6 +353,7 @@ public class Piece extends Structure {
 		for(int n_spawned_mobs=0; n_spawned_mobs<n_to_spawn_mobs; n_spawned_mobs+=1)
 		{
 			Zombie z = (Zombie) DuoMap.world.spawnEntity(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), EntityType.ZOMBIE);
+			z.setBaby(false);
 			z.getEquipment().setHelmet(new ItemStack(Material.STONE_BUTTON));
 		}
 		
@@ -395,20 +402,34 @@ public class Piece extends Structure {
 	
 	public void PlaySound(Sound s, int pitch)
 	{
-		Location loc = this.placed_pos.toLocation(DuoMap.world);
+		Location loc = this.placed_pos.add(0,DuoMap.floor_level,0).toLocation(DuoMap.world);
 		double volume;
 		for (DuoRunner runner : DuoTeam.runner_players)
 		{
 			Player p = runner.getDuoPlayer().getPlayer();
 			if (runner.piece == this)
-				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_near");
-			else
 				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_active");
+			else
+				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_near");
 			if (loc.distance(p.getLocation()) < tile_size*3)
 			{
-				DuoDungeonPlugin.logg("Distance to sound:" + loc.distance(p.getLocation()));
+				DuoDungeonPlugin.logg("Distance to sound:" + loc.distance(p.getLocation()) + " / volume: " + volume);
 				p.playSound(loc, s, (float) volume, pitch);
 			}
+		}
+	}
+	
+	public void PlayCracks(Coords3d map_origin, int level)
+	{
+		Coords3d tile_origin;
+		if (level < 1)
+			level = 1;
+		BlockData mat = Material.COBBLESTONE.createBlockData(); // gives specific aspect to the particles
+		for (int i=0; i<n_tiles; i+=1)
+		{
+			tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i], map_origin);
+			DuoMap.world.spawnParticle(Particle.BLOCK_CRACK, tile_origin.x, tile_origin.y, tile_origin.z,
+					level*3, tile_size-1, DuoMap.max_height, tile_size-1, 0, mat); // 0 is a default for most particles?
 		}
 	}
 }

@@ -138,7 +138,7 @@ public class PlayerEvents implements Listener {
     }
     
     @EventHandler
-    public void onBlocKPlaced(BlockPlaceEvent e) {
+    public void onBlockPlaced(BlockPlaceEvent e) {
     	Player p = e.getPlayer();
     	if (p == null)
     		return;

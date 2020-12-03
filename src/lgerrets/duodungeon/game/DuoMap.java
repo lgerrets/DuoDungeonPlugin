@@ -39,7 +39,8 @@ public class DuoMap {
 	static public Coords3d dungeon_origin;
 	static private Coords3d pastebin;
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
-	static public int max_height = ConfigManager.DDConfig.getInt("max_height");;
+	static public int floor_level = ConfigManager.DDConfig.getInt("floor_level");
+	static public int max_height = ConfigManager.DDConfig.getInt("max_height");
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
 	static public int not_placed_height = 10;
@@ -189,6 +190,7 @@ public class DuoMap {
 		        			else
 		        			{
 		        				piece.PlaySound(Sound.ENTITY_ARMOR_STAND_HIT, state);
+		        				piece.PlayCracks(dungeon_origin, state);
 		        			}
 	            		}
 	            		for (Piece piece : to_delete)
@@ -287,7 +289,7 @@ public class DuoMap {
 				case START:
 					UpdateNeighbourPieces(x, z, 1);
 				case CHECKPOINT:
-					dy = ConfigManager.DDConfig.getInt("floor_level");
+					dy = floor_level;
 					mat = Material.OBSIDIAN.createBlockData();
 					do_fill = true;
 					break;
