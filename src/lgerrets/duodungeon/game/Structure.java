@@ -1,8 +1,13 @@
 package lgerrets.duodungeon.game;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Predicate;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mob;
+import org.bukkit.util.BoundingBox;
 
 import com.sk89q.worldedit.regions.CuboidRegion;
 
@@ -16,14 +21,26 @@ public class Structure {
 	public Index2d[] map_occupation;
 	protected int n_tiles;
 	public Index2d map_occupation00;
+	
+	public static class IsMob<Entity> implements Predicate<Entity> {
+		@Override
+		public boolean test(Entity o) {
+			return (o instanceof Mob);
+		}
+	}
 
 	public void Delete()
 	{
+		// physically clean the cuboid
 		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
 		{
 			Coords3d tile_origin = Coords3d.Index2dToCoords3d(map_occupation[i_tile], DuoMap.dungeon_origin);
 			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, tile_origin.toBlockVector3(), tile_origin.add(tile_size-1,DuoMap.max_height+DuoMap.not_placed_height,tile_size-1).toBlockVector3());
 			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.AIR.createBlockData());
+			Collection<Entity> mobs = DuoMap.world.getNearbyEntities(new BoundingBox(tile_origin.x, tile_origin.y, tile_origin.z,
+					tile_origin.x+tile_size, tile_origin.y+DuoMap.max_height, tile_origin.z+tile_size), new IsMob());
+			for (Entity mob : mobs)
+				mob. remove();
 		}
 		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
 		{

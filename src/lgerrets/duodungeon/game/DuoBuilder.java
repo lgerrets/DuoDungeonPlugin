@@ -97,7 +97,7 @@ public class DuoBuilder extends DuoTeammate {
 	static public boolean DecreaseBombCount()
 	{
 		if (DuoMap.game.IsNextBomb())
-			return false;
+			return true;
 		int delta = 0;
 		for (DuoBuilder builder : DuoTeam.builder_players)
 		{

@@ -207,8 +207,8 @@ public class DuoMap {
 	
 	public void SpawnNewStruct()
 	{
-		//if (this.moving_type != StructureType.PIECE_UP)
-		//	return; // cannot spawn a struct while a bomb is in play
+		if (this.moving_type != StructureType.PIECE_UP)
+			return; // cannot spawn a struct while a bomb is in play
 		if (moving_piece != null)
 		{
 			if(!this.CanPlacePiece())
