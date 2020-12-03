@@ -36,6 +36,7 @@ public class ConfigManager {
 		setDefaultIfNotSet(DDConfig, "verbose", 0);
 		setDefaultIfNotSet(DDConfig, "tile_size", 6);
 		setDefaultIfNotSet(DDConfig, "max_height", 20);
+		setDefaultIfNotSet(DDConfig, "floor_level", 5);
 		setDefaultIfNotSet(DDConfig, "world", "world");
 
 		ConfigurationSection gameConfig = setDefaultSectionIfNotSet(DDConfig, "Game");

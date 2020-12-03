@@ -1,13 +1,16 @@
 package lgerrets.duodungeon.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.ItemStack;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
@@ -53,7 +56,12 @@ public class PlayerEvents implements Listener {
 	    		return;
 	    	}
 	        if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER && (e.getFrom().getZ() != e.getTo().getZ() || e.getFrom().getX() != e.getTo().getX())) {
-	            e.setCancelled(true);
+	    		ItemStack items = p.getPlayer().getItemInHand();
+	    		if (items == null)
+	    			return;
+	    		if(items.getType() != Material.STONE_BUTTON)
+	    			return;
+	        	e.setCancelled(true);
 	    		if (builder_move_cooldown.isReady())
 	    		{
 	    			// move the unplaced piece
@@ -78,12 +86,17 @@ public class PlayerEvents implements Listener {
 	    	}
 	    	if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER)
 	    	{
+	    		ItemStack items = p.getPlayer().getItemInHand();
+	    		if (items == null)
+	    			return;
+	    		if(items.getType() != Material.STONE_BUTTON)
+	    			return;
 	    		if (builder_act_cooldown.isReady())
 	    		{
-		    		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
+	    			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+	    				DuoMap.game.SpawnNewStruct();
+	    			else if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
 		    			DuoMap.game.TryRotatePiece(true); // true stands for trigo orientation
-		    		else if (e.getClickedBlock() != null || e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
-		    			DuoMap.game.SpawnNewStruct();
 		    		else
 		    			return;
 		    		builder_act_cooldown.reset();
@@ -112,9 +125,7 @@ public class PlayerEvents implements Listener {
     	}
     }
     
-    
-    /*
-     * //@EventHandler
+    @EventHandler
     public void onBlockDestroy(BlockBreakEvent e) {
     	Player p = e.getPlayer();
     	if (p == null)
@@ -124,5 +135,17 @@ public class PlayerEvents implements Listener {
     	{
     		e.setCancelled(true);
     	}
-    }*/
+    }
+    
+    @EventHandler
+    public void onBlocKPlaced(BlockPlaceEvent e) {
+    	Player p = e.getPlayer();
+    	if (p == null)
+    		return;
+    	DuoPlayer player = DuoPlayer.getPlayer(p.getPlayer().getUniqueId());
+    	if (player.getTeam().teamType == DuoTeam.TeamType.BUILDER)
+    	{
+    		e.setCancelled(true);
+    	}
+    }
 }

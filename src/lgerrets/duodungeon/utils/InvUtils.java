@@ -26,4 +26,16 @@ public class InvUtils {
 		}
 		return delta;
 	}
+	
+	static public void addItems(Player p, int amount, Material mat)
+	{
+		ItemStack items = new ItemStack(mat);
+		addItems(p, amount, items);
+	}
+	
+	static public void addItems(Player p, int amount, ItemStack items)
+	{
+		items.setAmount(amount);
+		p.getInventory().addItem(items);
+	}
 }

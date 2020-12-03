@@ -48,7 +48,10 @@ public class WEUtils {
 			    );
 			    // configure here
 			    if (cut)
+			    {
 			    	forwardExtentCopy.setSourceFunction(new BlockReplace(editSession, BukkitAdapter.adapt(Material.AIR.createBlockData())));
+			    	forwardExtentCopy.setRemovingEntities(true);
+			    }
 			    Operations.complete(forwardExtentCopy);
 			} catch (WorldEditException e) {
 				// TODO Auto-generated catch block
@@ -100,7 +103,7 @@ public class WEUtils {
 				{
 					Block block = world.getBlockAt(x, y, z);
 					if (block.getType() != except)
-						block.setType(mat);
+						world.getBlockAt(x, y, z).setType(mat);
 				}
 			}
 		}

@@ -10,6 +10,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -286,7 +287,7 @@ public class DuoMap {
 				case START:
 					UpdateNeighbourPieces(x, z, 1);
 				case CHECKPOINT:
-					dy = 2;
+					dy = ConfigManager.DDConfig.getInt("floor_level");
 					mat = Material.OBSIDIAN.createBlockData();
 					do_fill = true;
 					break;
@@ -402,6 +403,7 @@ public class DuoMap {
 			case PEACEFUL:
 				// explode bomb
 				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true, 0);
+				PlaySound(Sound.ENTITY_GENERIC_EXPLODE, 0);
 				moving_struct.Delete();
 				this.moving_type = StructureType.PIECE_UP;
 				this.SpawnNewStruct();
@@ -611,6 +613,7 @@ public class DuoMap {
 	{
 		DuoDungeonPlugin.logg("SUPERSTUN!");
 		List<LivingEntity> entities = world.getLivingEntities();
+		PlaySound(Sound.BLOCK_ANVIL_PLACE, 0);
 		for (LivingEntity e : entities)
 		{
 			if (e instanceof Monster)
@@ -621,6 +624,14 @@ public class DuoMap {
 		}
 	}
 	
+	private void PlaySound(Sound sound, float pitch) {
+		for (DuoTeammate player : DuoTeam.GetAllPlayers())
+		{
+			Player p = player.getDuoPlayer().getPlayer();
+			p.playSound(p.getLocation(), sound, (float) 1.0, pitch);
+		}
+	}
+
 	public void UpdateNeighbourPieces(int x, int z, int delta)
 	{
 		this.neighbour_pieces[x-1][z] += delta;

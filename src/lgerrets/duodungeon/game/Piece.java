@@ -280,7 +280,7 @@ public class Piece extends Structure {
 		content[0] = Drops.DrawDrop(rndRarity, 0);
 		chest.getInventory().setContents(content);
 		
-		// create a beacon, and place colored stained glass
+		// create a beacon, and place colored stained glass, and check blocks above
 		Material mat = Material.WHITE_STAINED_GLASS;
 		boolean do_spawn_beacon = false;
 		switch(rndRarity)
@@ -304,7 +304,13 @@ public class Piece extends Structure {
 		}
 		if (do_spawn_beacon)
 		{
-			WEUtils.FillRegionExcept(DuoMap.world, chest_pos_abs.add(0, 1, 0), chest_pos_abs.add(0, DuoMap.max_height, 0), mat, Material.AIR);
+			Block above_block;
+			for (int y=chest_pos_abs.y+1; y<DuoMap.dungeon_origin.y+DuoMap.max_height; y+=1)
+			{
+				above_block = DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z);
+				if (above_block.getType().isOccluding())
+					DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z).setType(mat);
+			}
 			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
 			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
 			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());

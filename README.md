@@ -37,10 +37,11 @@ module-info.java > "requires <paste>"
 ## Bugs / Todos
 
 Bugs:
-- call SetTeam in Player constructor when Player joins server
+- call SetTeam(none) in Player constructor when Player joins server
 - adventure mode causes builder left click to trigger nothing when clicking on barrier block
 - builder right click triggers place
 - deal with player exit (currently exceptions occur)
+- j'au pu placer une bombe ?!
 
 Todos:
 - checkpoints
@@ -62,3 +63,7 @@ Ideas:
   - jump boost
   - strength
 (- builder can move around, give him several speed boots)
+- builder supply:
+  - reroll pièce courrante
+  - onde de choc knockback mobs
+  - météorite

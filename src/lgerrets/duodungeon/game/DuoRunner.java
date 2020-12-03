@@ -2,6 +2,7 @@ package lgerrets.duodungeon.game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,7 +13,7 @@ import lgerrets.duodungeon.utils.InvUtils;
 public class DuoRunner extends DuoTeammate {
 	
 	
-	private static class TrackActivePiece implements Runnable {
+	private class TrackActivePiece implements Runnable {
 		DuoRunner player;
 		public TrackActivePiece(DuoRunner player)
 		{
@@ -43,13 +44,16 @@ public class DuoRunner extends DuoTeammate {
 	}
 	
 	public Piece piece;
+	private int taskId;
 
 	public DuoRunner(DuoPlayer player) {
 		super(player);
 		piece = null;
 		type = DuoTeam.TeamType.RUNNER;
-		
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new TrackActivePiece(this), 0, 1);
+		player.getPlayer().setGameMode(GameMode.ADVENTURE);
+		taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new TrackActivePiece(this), 0, 1);
+		if(DuoMap.game.IsRunning())
+			this.ResetRunner();
 	}
 	
 	public void ResetRunner()
@@ -58,6 +62,9 @@ public class DuoRunner extends DuoTeammate {
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.GOLD_NUGGET);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.ARROW);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.BREAD);
+		Coords3d coords = Coords3d.FromWaypoint("runner");
+		player.getPlayer().teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 0));
+		player.getPlayer().setHealth(player.getPlayer().getMaxHealth());
 	}
 	
 	@Override
@@ -66,6 +73,7 @@ public class DuoRunner extends DuoTeammate {
 		super.Unregister();
 		if (this.piece != null)
 			this.piece.players.remove(this);
+		Bukkit.getScheduler().cancelTask(taskId);
 	}
 	
 	static public void Reset()

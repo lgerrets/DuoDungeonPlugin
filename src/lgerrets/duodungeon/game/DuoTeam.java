@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import lgerrets.duodungeon.utils.Coords3d;
 
 public class DuoTeam {
 	public enum TeamType
@@ -58,14 +61,27 @@ public class DuoTeam {
 		return total_level;
 	}
 	
-	static void removePlayer(DuoPlayer p, TeamType teamType) {
-		for (DuoTeammate teammate : all_players.get(teamType))
+	static void removePlayer(DuoPlayer p) {
+		for (TeamType type : TeamType.values())
 		{
-			if (teammate.getDuoPlayer().equals(p))
+			for (DuoTeammate teammate : all_players.get(type))
 			{
-				teammate.Unregister();
-				break;
+				if (teammate.getDuoPlayer().equals(p))
+				{
+					teammate.Unregister();
+					break;
+				}
 			}
 		}
+	}
+	
+	static ArrayList<DuoTeammate> GetAllPlayers()
+	{
+		ArrayList<DuoTeammate> ret = new ArrayList<DuoTeammate>();
+		for (TeamType type : TeamType.values())
+		{
+			ret.addAll(all_players.get(type));
+		}
+		return ret;
 	}
 }

@@ -78,8 +78,9 @@ public class DuoPlayer
 			DuoPlayer p = getPlayer(player.getUniqueId());
 			if(p != null)
 			{
-				// todo: delete this
+				DuoTeam.removePlayer(p);
 			}
+			players.remove(player.getUniqueId());
 		}
 		
 		private boolean exists(final Player p)
@@ -135,36 +136,22 @@ public class DuoPlayer
 	public void setTeam(DuoTeam t)
 	{
 		Player p = this.getPlayer();
+		if (p == null)
+			return;
 		
 		if (this.team == t)
 		{
-			if(p != null)
-			{
-				p.sendMessage("You are already in team " + t.teamType.toString() + "!");
-			}
-			return;
+			p.sendMessage("You are already in team " + t.teamType.toString() + "!");
 		}
 		
+		DuoTeam.removePlayer(this);
 		if (t.teamType == DuoTeam.TeamType.BUILDER)
 		{
-			if(p != null)
-			{
-				Coords3d coords = Coords3d.FromWaypoint("builder");
-				DuoMap.world.getBlockAt(coords.x, coords.y-2, coords.z).setType(Material.WHITE_STAINED_GLASS_PANE); // BARRIER
-				p.teleport(new Location(DuoMap.world, coords.x+0.5, coords.y, coords.z+0.5, -90, 90));
-				DuoTeam.removePlayer(this, this.team.teamType);
-				DuoTeam.builder_players.add(new DuoBuilder(this));
-			}
+			DuoTeam.builder_players.add(new DuoBuilder(this));
 		}
 		else if (t.teamType == DuoTeam.TeamType.RUNNER)
 		{
-			if(p != null)
-			{
-				Coords3d coords = Coords3d.FromWaypoint("runner");
-				p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 0));
-				DuoTeam.removePlayer(this, this.team.teamType);
-				DuoTeam.runner_players.add(new DuoRunner(this));
-			}
+			DuoTeam.runner_players.add(new DuoRunner(this));
 		}
 		this.team = t;
 		
@@ -172,10 +159,7 @@ public class DuoPlayer
 		String name = playerName.length() > 14 ? playerName.substring(0, 14) : playerName;
 		try 
 		{
-			if(p != null)
-			{
-				p.setPlayerListName(t.color + name);
-			}
+			p.setPlayerListName(t.color + name);
 		}
 		catch(IllegalArgumentException e1) 
 		{
@@ -183,11 +167,7 @@ public class DuoPlayer
 			name = (name.length() > 11 ? name.substring(0, 11) : name) + "" + rnd.nextInt(9);
 			try 
 			{
-				p = this.getPlayer();
-				if(p != null)
-				{
-					p.setPlayerListName(t.color + name);
-				}
+				p.setPlayerListName(t.color + name);
 			}
 			catch(IllegalArgumentException e2) 
 			{
