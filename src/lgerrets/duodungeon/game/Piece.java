@@ -327,6 +327,7 @@ public class Piece extends Structure {
 			if (do_spawn_beacon)
 			{
 				Block above_block;
+				// transform above occluding blocks so that the colored beam can go through
 				for (int y=chest_pos_abs.y+1; y<DuoMap.dungeon_origin.y+DuoMap.max_height; y+=1)
 				{
 					above_block = DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z);
@@ -354,7 +355,7 @@ public class Piece extends Structure {
 					{
 						if (DuoMap.world.getBlockAt(x, y+1, z).getType().equals(Material.AIR) && DuoMap.world.getBlockAt(x, y+2, z).getType().equals(Material.AIR))
 						{
-							if(!DuoMap.world.getBlockAt(x, y, z).getType().equals(Material.AIR) && !DuoMap.world.getBlockAt(x, y, z).getType().equals(Material.BARRIER))
+							if(DuoMap.world.getBlockAt(x, y, z).getType().isOccluding())
 							{
 								spawnables.add(new Coords3d(x,y+1,z));
 							}
@@ -369,9 +370,7 @@ public class Piece extends Structure {
 		Integer[] rnd_coords = MyMath.RandomUInts(n_to_spawn_mobs, spawnables.size(), true);
 		for(int n_spawned_mobs=0; n_spawned_mobs<n_to_spawn_mobs; n_spawned_mobs+=1)
 		{
-			Zombie z = (Zombie) DuoMap.world.spawnEntity(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), EntityType.ZOMBIE);
-			z.setBaby(false);
-			z.getEquipment().setHelmet(new ItemStack(Material.STONE_BUTTON));
+			Spawns.DrawMob(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), 2.0);
 		}
 		
 		// update builder's combo

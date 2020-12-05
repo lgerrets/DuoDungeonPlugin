@@ -48,6 +48,7 @@ Todos:
 - life loss
 + default structures on map
 + missile
+- show mobs' health on top of their head
 - mobs:
   - without helmet + fire resistance, to give runners fire on melee hit
   - no natural mob spawn

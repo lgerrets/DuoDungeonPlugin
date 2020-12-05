@@ -73,6 +73,19 @@ public class MyMath {
 		return randomizer.nextDouble();
 	}
 	
+	public static <T> T RandomChoiceUniform(T[] set)
+	{
+		Double rnd = RandomFloat();
+		Double thresh = 0.0;
+		for (T entry : set)
+		{
+			thresh += 1.0/set.length;
+			if (rnd < thresh)
+				return entry;
+		}
+		return null;
+	}
+	
 	public static <T> T RandomChoiceUniform(Set<T> set)
 	{
 		Double rnd = RandomFloat();
