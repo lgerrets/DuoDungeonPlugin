@@ -1,4 +1,4 @@
-package lgerrets.duodungeon.game;
+package lgerrets.duodungeon.players;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -75,7 +75,7 @@ public class DuoTeam {
 		}
 	}
 	
-	static ArrayList<DuoTeammate> GetAllPlayers()
+	public static ArrayList<DuoTeammate> GetAllPlayers()
 	{
 		ArrayList<DuoTeammate> ret = new ArrayList<DuoTeammate>();
 		for (TeamType type : TeamType.values())

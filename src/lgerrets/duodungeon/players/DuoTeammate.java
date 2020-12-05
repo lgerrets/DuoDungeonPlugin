@@ -1,4 +1,4 @@
-package lgerrets.duodungeon.game;
+package lgerrets.duodungeon.players;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
 

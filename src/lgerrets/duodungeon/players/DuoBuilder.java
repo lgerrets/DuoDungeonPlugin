@@ -1,4 +1,4 @@
-package lgerrets.duodungeon.game;
+package lgerrets.duodungeon.players;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.sk89q.worldedit.regions.CuboidRegion;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.DuoMap;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.InvUtils;
 import lgerrets.duodungeon.utils.MyMath;

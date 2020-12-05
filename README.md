@@ -67,3 +67,6 @@ Ideas:
   - reroll pièce courrante
   - onde de choc knockback mobs
   - météorite
+  - spawner un dongeon avec loot pété
+- quêtes
+  - sauver des villageois

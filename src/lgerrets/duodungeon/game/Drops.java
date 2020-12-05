@@ -22,6 +22,7 @@ import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.enchantments.CustomEnchants;
 import lgerrets.duodungeon.enchantments.EnchantmentWrapper;
+import lgerrets.duodungeon.players.DuoTeam;
 import lgerrets.duodungeon.utils.MyMath;
 import net.md_5.bungee.api.ChatColor;
 

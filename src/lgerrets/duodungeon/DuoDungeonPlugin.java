@@ -9,17 +9,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import lgerrets.duodungeon.enchantments.CustomEnchants;
-import lgerrets.duodungeon.game.DuoBuilder;
-import lgerrets.duodungeon.game.DuoNoteamer;
-import lgerrets.duodungeon.game.DuoPlayer;
-import lgerrets.duodungeon.game.DuoRunner;
-import lgerrets.duodungeon.game.DuoTeam;
-import lgerrets.duodungeon.game.DuoTeammate;
-import lgerrets.duodungeon.game.DuoTeam.TeamType;
 import lgerrets.duodungeon.listeners.Commands;
 import lgerrets.duodungeon.listeners.EnchantmentEvents;
 import lgerrets.duodungeon.listeners.MobEvents;
 import lgerrets.duodungeon.listeners.PlayerEvents;
+import lgerrets.duodungeon.players.DuoBuilder;
+import lgerrets.duodungeon.players.DuoNoteamer;
+import lgerrets.duodungeon.players.DuoPlayer;
+import lgerrets.duodungeon.players.DuoRunner;
+import lgerrets.duodungeon.players.DuoTeam;
+import lgerrets.duodungeon.players.DuoTeammate;
+import lgerrets.duodungeon.players.DuoTeam.TeamType;
 
 public class DuoDungeonPlugin extends JavaPlugin {
 	private static JavaPlugin instance;

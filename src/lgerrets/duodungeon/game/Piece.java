@@ -28,6 +28,9 @@ import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.Drops.ChestRarity;
 import lgerrets.duodungeon.game.DuoMap.StructureType;
+import lgerrets.duodungeon.players.DuoBuilder;
+import lgerrets.duodungeon.players.DuoRunner;
+import lgerrets.duodungeon.players.DuoTeam;
 import lgerrets.duodungeon.utils.Cooldown;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
@@ -154,6 +157,7 @@ public class Piece extends Structure {
 	public Index2d[] map_occupation_first;
 	public int rotation;
 	private int rndTemplate;
+	private int n_chests;
 	private int rndChest;
 	private ChestRarity rndRarity;
 	private Coords3d[] my_chest_pos_relative;
@@ -174,9 +178,19 @@ public class Piece extends Structure {
 		clone_from = occupations.get(shape);
 		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
-		rndChest = MyMath.RandomUInt(chest_pos_relative.get(shape)[rndTemplate].length);
-		rndRarity = MyMath.RandomChoice(Drops.rarity_drops.entrySet());
-		my_chest_pos_relative = chest_pos_relative.get(shape)[rndTemplate].clone();
+		n_chests = chest_pos_relative.get(shape)[rndTemplate].length;
+		if (n_chests > 0)
+		{
+			rndChest = MyMath.RandomUInt(n_chests);
+			rndRarity = MyMath.RandomChoice(Drops.rarity_drops.entrySet());
+			my_chest_pos_relative = chest_pos_relative.get(shape)[rndTemplate].clone();
+		}
+		else
+		{
+			rndChest = -1;
+			rndRarity = Drops.ChestRarity.COMMON;
+			my_chest_pos_relative = new Coords3d[0];
+		}
 		is_placed = false;
 		players = new ArrayList<DuoRunner>();
 		lifetime_cooldown = new Cooldown(ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime"), false);
@@ -262,65 +276,68 @@ public class Piece extends Structure {
 		this.placed_pos = this.placed_pos.scale(1.0/this.n_tiles);
 		this.placed_pos = this.placed_pos.add(tile_size/2, 0, tile_size/2);
 		
-		Coords3d chest_pos_abs;
-		// remove all but 1 chest
-		DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
-		for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
+		if (n_chests > 0)
 		{
-			if (i_chest != rndChest)
+			Coords3d chest_pos_abs;
+			// remove all but 1 chest
+			DuoDungeonPlugin.logg(this.my_chest_pos_relative[0].toString());
+			for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
 			{
-				chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(my_chest_pos_relative[i_chest]);
-				// TODO: take rotation into account
-				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
+				if (i_chest != rndChest)
+				{
+					chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(my_chest_pos_relative[i_chest]);
+					// TODO: take rotation into account
+					DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z).setType(Material.AIR);
+				}
 			}
-		}
+			
+			// fill the chest
+			chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(my_chest_pos_relative[rndChest]);
+			// TODO: take rotation into account
+			Block block = DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z);
+			if (block.getType() != Material.CHEST)
+				DuoDungeonPlugin.logg("WARNING: block " + chest_pos_abs.toString() + " is not a chest: "+block.getType().toString());
+			Chest chest = (Chest) block.getState();
+			ItemStack[] content = new ItemStack[1];
+			content[0] = Drops.DrawDrop(rndRarity, 0);
+			chest.getInventory().setContents(content);
 		
-		// fill the chest
-		chest_pos_abs = Coords3d.Index2dToCoords3d(map_occupation00, map_origin).add(my_chest_pos_relative[rndChest]);
-		// TODO: take rotation into account
-		Block block = DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y, chest_pos_abs.z);
-		if (block.getType() != Material.CHEST)
-			DuoDungeonPlugin.logg("WARNING: block " + chest_pos_abs.toString() + " is not a chest: "+block.getType().toString());
-		Chest chest = (Chest) block.getState();
-		ItemStack[] content = new ItemStack[1];
-		content[0] = Drops.DrawDrop(rndRarity, 0);
-		chest.getInventory().setContents(content);
-		
-		// create a beacon, and place colored stained glass, and check blocks above
-		Material mat = Material.WHITE_STAINED_GLASS;
-		boolean do_spawn_beacon = false;
-		switch(rndRarity)
-		{
-		case COMMON:
-			break;
-		case RARE:
-			do_spawn_beacon = true;
-			mat = Material.BLUE_STAINED_GLASS;
-			break;
-		case EPIC:
-			do_spawn_beacon = true;
-			mat = Material.PURPLE_STAINED_GLASS;
-			break;
-		case LEGENDARY:
-			do_spawn_beacon = true;
-			mat = Material.ORANGE_STAINED_GLASS;
-			break;
-		default:
-			break;				
-		}
-		if (do_spawn_beacon)
-		{
-			Block above_block;
-			for (int y=chest_pos_abs.y+1; y<DuoMap.dungeon_origin.y+DuoMap.max_height; y+=1)
+			// create a beacon, and place colored stained glass, and check blocks above
+			Material mat = Material.WHITE_STAINED_GLASS;
+			boolean do_spawn_beacon = false;
+			switch(rndRarity)
 			{
-				above_block = DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z);
-				if (above_block.getType().isOccluding())
-					DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z).setType(mat);
+			case COMMON:
+				break;
+			case RARE:
+				do_spawn_beacon = true;
+				mat = Material.BLUE_STAINED_GLASS;
+				break;
+			case EPIC:
+				do_spawn_beacon = true;
+				mat = Material.PURPLE_STAINED_GLASS;
+				break;
+			case LEGENDARY:
+				do_spawn_beacon = true;
+				mat = Material.ORANGE_STAINED_GLASS;
+				break;
+			default:
+				break;				
 			}
-			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
-			DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
-			CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
-			WEUtils.FillRegion(DuoMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
+			if (do_spawn_beacon)
+			{
+				Block above_block;
+				for (int y=chest_pos_abs.y+1; y<DuoMap.dungeon_origin.y+DuoMap.max_height; y+=1)
+				{
+					above_block = DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z);
+					if (above_block.getType().isOccluding())
+						DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z).setType(mat);
+				}
+				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
+				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
+				CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
+				WEUtils.FillRegion(DuoMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
+			}
 		}
 		
 		// spawn mobs
@@ -393,11 +410,14 @@ public class Piece extends Structure {
 		rotation += 1;
 		Coords3d rotation_center = new Coords3d(0,0,0);
 		Coords3d translation = new Coords3d(0,0,DuoMap.tile_size-1); // dirty hack
-		for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
+		if (n_chests > 0)
 		{
-			my_chest_pos_relative[i_chest] = my_chest_pos_relative[i_chest].CalculateRotation(rotation_center, orientation).add(translation);
+			for (int i_chest=0; i_chest<my_chest_pos_relative.length; i_chest+=1)
+			{
+				my_chest_pos_relative[i_chest] = my_chest_pos_relative[i_chest].CalculateRotation(rotation_center, orientation).add(translation);
+			}
+			DuoDungeonPlugin.logg(my_chest_pos_relative[rndChest].toString());
 		}
-		DuoDungeonPlugin.logg(my_chest_pos_relative[0].toString());
 	}
 	
 	public void PlaySound(Sound s, int pitch)

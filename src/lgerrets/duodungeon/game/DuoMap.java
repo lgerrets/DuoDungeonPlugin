@@ -19,6 +19,10 @@ import org.bukkit.Sound;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.players.DuoBuilder;
+import lgerrets.duodungeon.players.DuoRunner;
+import lgerrets.duodungeon.players.DuoTeam;
+import lgerrets.duodungeon.players.DuoTeammate;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
@@ -151,6 +155,7 @@ public class DuoMap {
 			next_is_bomb = false;
 			SpawnNewStruct();
 			DuoBuilder.Reset();
+			DuoRunner.Reset();
 			
 	        Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {
 	            @Override

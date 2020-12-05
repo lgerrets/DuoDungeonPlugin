@@ -83,7 +83,7 @@ public class Structure {
 		return founds;
 	}
 	
-	protected boolean HasCoords3d(Coords3d coords)
+	public boolean HasCoords3d(Coords3d coords)
 	{
 		for (int i_tile=0; i_tile < n_tiles; i_tile+=1)
 		{

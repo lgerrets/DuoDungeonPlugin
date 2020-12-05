@@ -5,8 +5,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import lgerrets.duodungeon.game.DuoMap;
-import lgerrets.duodungeon.game.DuoPlayer;
-import lgerrets.duodungeon.game.DuoTeam;
+import lgerrets.duodungeon.players.DuoPlayer;
+import lgerrets.duodungeon.players.DuoTeam;
 
 public class Commands implements CommandExecutor  {
 	

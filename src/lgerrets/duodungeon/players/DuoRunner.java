@@ -1,4 +1,4 @@
-package lgerrets.duodungeon.game;
+package lgerrets.duodungeon.players;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -7,6 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.DuoMap;
+import lgerrets.duodungeon.game.Piece;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.InvUtils;
 

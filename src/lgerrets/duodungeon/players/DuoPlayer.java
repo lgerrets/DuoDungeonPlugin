@@ -1,4 +1,4 @@
-package lgerrets.duodungeon.game;
+package lgerrets.duodungeon.players;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -106,7 +106,7 @@ public class DuoPlayer
 		this.id = ID;
 		this.name = Name;
 		DuoDungeonPlugin.logg(DuoTeam.teams);
-		team = DuoTeam.teams.get(DuoTeam.TeamType.NONE);
+		this.setTeam(DuoTeam.teams.get(DuoTeam.TeamType.NONE));
 	}
 	
 	public String getName()
@@ -142,7 +142,9 @@ public class DuoPlayer
 		if (this.team == t)
 		{
 			p.sendMessage("You are already in team " + t.teamType.toString() + "!");
+			return;
 		}
+		p.sendMessage(t.color + "You are now in team " + t.teamType.toString());
 		
 		DuoTeam.removePlayer(this);
 		if (t.teamType == DuoTeam.TeamType.BUILDER)
@@ -171,7 +173,7 @@ public class DuoPlayer
 			}
 			catch(IllegalArgumentException e2) 
 			{
-				DuoDungeonPlugin.logg("[Annihilation] setPlayerListName error: " + e2.getMessage());
+				DuoDungeonPlugin.logg("setPlayerListName error: " + e2.getMessage());
 			}
 		}
 	}
