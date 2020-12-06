@@ -48,13 +48,14 @@ Todos:
 - life loss
 + default structures on map
 + missile
-- show mobs' health on top of their head
++ show mobs' health on top of their head (=> in action bar with ActionHealth plugin)
++ put beacon at bottom of piece => allow chests to be put in heights
 - mobs:
   - without helmet + fire resistance, to give runners fire on melee hit
   - no natural mob spawn
   - random #mobs / piece
   - customized health
-  - mobs do not move until their piece is active
+  - mobs do not move until their piece is active ()
 
 Ideas:
 - enchantments

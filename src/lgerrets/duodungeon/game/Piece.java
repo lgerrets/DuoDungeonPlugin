@@ -328,15 +328,18 @@ public class Piece extends Structure {
 			{
 				Block above_block;
 				// transform above occluding blocks so that the colored beam can go through
-				for (int y=chest_pos_abs.y+1; y<DuoMap.dungeon_origin.y+DuoMap.max_height; y+=1)
+				int bottom_y = DuoMap.dungeon_origin.y;
+				for (int y=bottom_y+3; y<bottom_y+DuoMap.max_height; y+=1)
 				{
 					above_block = DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z);
 					if (above_block.getType().isOccluding())
 						DuoMap.world.getBlockAt(chest_pos_abs.x, y, chest_pos_abs.z).setType(mat);
 				}
-				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-2, chest_pos_abs.z).setType(Material.BEACON);
-				DuoMap.world.getBlockAt(chest_pos_abs.x, chest_pos_abs.y-1, chest_pos_abs.z).setType(mat);
-				CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, chest_pos_abs.add(-1, -3, -1).toBlockVector3(), chest_pos_abs.add(1,-3,1).toBlockVector3());
+				DuoMap.world.getBlockAt(chest_pos_abs.x, bottom_y+1, chest_pos_abs.z).setType(Material.BEACON);
+				DuoMap.world.getBlockAt(chest_pos_abs.x, bottom_y+2, chest_pos_abs.z).setType(mat);
+				Coords3d iron_center = chest_pos_abs.clone();
+				iron_center.y = bottom_y;
+				CuboidRegion region = new CuboidRegion(DuoMap.WEWorld, iron_center.add(-1, 0, -1).toBlockVector3(), iron_center.add(1,0,1).toBlockVector3());
 				WEUtils.FillRegion(DuoMap.WEWorld, region, Material.IRON_BLOCK.createBlockData());
 			}
 		}

@@ -36,6 +36,16 @@ public class Coords3d {
 		z = (int) Z;
 	}
 	
+	public Coords3d(Coords3d o)
+	{
+		this(o.x, o.y, o.z);
+	}
+	
+	public Coords3d clone()
+	{
+		return new Coords3d(this);
+	}
+	
 	public Coords3d(Location loc)
 	{
 		this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());

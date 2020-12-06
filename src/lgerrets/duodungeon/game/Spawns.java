@@ -155,6 +155,7 @@ public class Spawns {
 			}
 		}
 		
-		mob.setHealth(mob_health.get(type) + 4.0*drawn_health_bonus);		
+		//mob.setMaxHealth(mob_health.get(type) + 4.0*drawn_health_bonus); // https://stackoverflow.com/questions/43701216/how-do-setmaxhealth-to-custom-entityskeleton
+		mob.setHealth(mob_health.get(type) + 4.0*drawn_health_bonus);
 	}
 }
