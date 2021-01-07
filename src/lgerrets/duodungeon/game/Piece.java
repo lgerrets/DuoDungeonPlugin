@@ -300,8 +300,10 @@ public class Piece extends Structure {
 			if (block.getType() != Material.CHEST)
 				DuoDungeonPlugin.logg("WARNING: block " + chest_pos_abs.toString() + " is not a chest: "+block.getType().toString());
 			Chest chest = (Chest) block.getState();
-			ItemStack[] content = new ItemStack[1];
-			content[0] = Drops.DrawDrop(rndRarity, 0);
+			ItemStack[] content = new ItemStack[2];
+			content[0] = Drops.DrawDrop(rndRarity, 0, Drops.DropType.UNSPECIFIED);
+			if (content[0].getType() != Material.GOLD_NUGGET)
+				content[1] = Drops.DrawDrop(rndRarity, 0, Drops.DropType.MONEY);
 			chest.getInventory().setContents(content);
 		
 			// create a beacon, and place colored stained glass, and check blocks above

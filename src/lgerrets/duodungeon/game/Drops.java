@@ -39,7 +39,8 @@ public class Drops {
 				- rarity_drops.get(ChestRarity.EPIC) - rarity_drops.get(ChestRarity.LEGENDARY));
 	}
 	
-	private enum DropType {
+	public enum DropType {
+		UNSPECIFIED,
 		MELEE, BOW, HELMET, CHESTPLATE, LEGGINGS, BOOTS, 
 		SUPPLIES, MONEY, 
 	};
@@ -179,7 +180,7 @@ public class Drops {
 	CustomEnchants.JUMPY
 	CustomEnchants.STRENGTH*/
 	
-	static public ItemStack DrawDrop(ChestRarity rarity, int tier)
+	static public ItemStack DrawDrop(ChestRarity rarity, int tier, DropType force_type)
 	{
 		double max_score = tier*2;
 		double effective_score;
@@ -205,18 +206,22 @@ public class Drops {
 		}
 		
 		// draw DropType
-		double min_possible_score = 999;
 		DropType dropType = null;
-		while (min_possible_score > max_score) // eg. do not draw from the bow bucket if max_score is too low
-		{
-			dropType = MyMath.RandomChoiceUniform(drop_base_score.keySet());
-			min_possible_score = Collections.min(drop_base_score.get(dropType).values());
-			if (dropType == DropType.MONEY || dropType == DropType.SUPPLIES)
+		if (force_type == DropType.UNSPECIFIED) {
+			double min_possible_score = 999;
+			while (min_possible_score > max_score) // eg. do not draw from the bow bucket if max_score is too low
 			{
-				if (rarity != ChestRarity.COMMON) // we do not want supplies nor money in RARE+ chests
-					min_possible_score = 999;
+				dropType = MyMath.RandomChoiceUniform(drop_base_score.keySet());
+				min_possible_score = Collections.min(drop_base_score.get(dropType).values());
+				if (dropType == DropType.MONEY || dropType == DropType.SUPPLIES)
+				{
+					if (rarity != ChestRarity.COMMON) // we do not want supplies nor money in RARE+ chests
+						min_possible_score = 999;
+				}
 			}
 		}
+		else
+			dropType = force_type;
 		
 		// draw item
 		Material mat = null;

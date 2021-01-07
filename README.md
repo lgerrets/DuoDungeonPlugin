@@ -52,6 +52,7 @@ Todos:
   - customized health
   - mobs do not move until their piece is active ()
   - stop natural despawn?
+- have only one runnable per class, not per player runner!
 
 Ideas:
 - enchantments

@@ -2,14 +2,20 @@ package lgerrets.duodungeon.listeners;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Chest;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import lgerrets.duodungeon.ConfigManager;
@@ -148,4 +154,29 @@ public class PlayerEvents implements Listener {
     		e.setCancelled(true);
     	}
     }
+    
+    @EventHandler
+    public void onItemPickedFromChest(InventoryClickEvent e) {
+        Inventory inv = e.getClickedInventory();
+        if (inv == null)
+            return;
+        //if (e.getCurrentItem() == null || e.getCurrentItem().getAmount() == 0)
+        //	return;
+        DuoDungeonPlugin.logg(e.getCursor());
+        InventoryHolder source = inv.getHolder();
+        if (source instanceof Chest)
+        {
+            Chest chest = (Chest) source;
+            //BlockData data = chest.getBlockData();
+            DuoDungeonPlugin.logg(source.toString());
+            ItemStack taking = e.getCurrentItem();
+            chest.getBlockInventory().clear();
+            chest.getBlockInventory().setItem(e.getSlot(), taking);
+            //setContents new ItemStack[1]
+            /*for (int idx=0; idx<inv.getSize(); idx+=1)
+                inv.setItem(idx,  null);*/
+            //chest.update();
+        }
+    }
 }
+
