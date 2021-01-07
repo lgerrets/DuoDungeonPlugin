@@ -9,18 +9,22 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.util.BoundingBox;
 
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.DuoMap.StructureType;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.WEUtils;
 
-public class Structure {
+public abstract class Structure {
 	protected static int tile_size = DuoMap.tile_size;
 	public Index2d[] map_occupation;
+	public Index2d[] clone_from;
 	protected int n_tiles;
 	public Index2d map_occupation00;
+	public StructureType structure_type;
 	
 	public static class IsMob<Entity> implements Predicate<Entity> {
 		@Override
@@ -40,7 +44,7 @@ public class Structure {
 			Collection<Entity> mobs = DuoMap.world.getNearbyEntities(new BoundingBox(tile_origin.x, tile_origin.y, tile_origin.z,
 					tile_origin.x+tile_size, tile_origin.y+DuoMap.max_height, tile_origin.z+tile_size), new IsMob());
 			for (Entity mob : mobs)
-				mob. remove();
+				mob.remove();
 		}
 		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
 		{
@@ -94,5 +98,24 @@ public class Structure {
 		}
 		return false;
 	}
+	
+	public void InitialClone(Coords3d pastebin, int add_y)
+	{
+		BlockVector3[] piece_from = new BlockVector3[n_tiles];
+		BlockVector3[] pastebins = new BlockVector3[n_tiles];
+		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
+		Coords3d template_origin = this.GetTemplateOrigin();
+		for (int idx=0; idx<n_tiles; idx+=1)
+		{
+			piece_from[idx] = Coords3d.Index2dToBlockVector3(this.clone_from[idx], template_origin);
+			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
+			piece_dest[idx] = Coords3d.Index2dToBlockVector3(this.map_occupation[idx], DuoMap.dungeon_origin.add(0,add_y,0));
+		}
+		
+		DuoMap.game.MoveTiles(piece_from, pastebins, false, 0);
+		DuoMap.game.MoveTiles(pastebins, piece_dest, true, 0);
+	}
+	
+	abstract public Coords3d GetTemplateOrigin();
 
 }

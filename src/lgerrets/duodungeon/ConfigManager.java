@@ -68,6 +68,7 @@ public class ConfigManager {
 		setDefaultWaypointIfNotSet(waypoints, "tetris_i");
 		setDefaultWaypointIfNotSet(waypoints, "bomb");
 		setDefaultWaypointIfNotSet(waypoints, "obstacle");
+		setDefaultWaypointIfNotSet(waypoints, "checkpoint");
 		setDefaultWaypointIfNotSet(waypoints, "builder");
 		setDefaultWaypointIfNotSet(waypoints, "runner");
 		

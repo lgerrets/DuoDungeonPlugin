@@ -152,7 +152,6 @@ public class Piece extends Structure {
 	}
 
 	public TetrisShape shape;
-	public Index2d[] clone_from;
 	public Index2d map_occupation00_first;
 	public Index2d[] map_occupation_first;
 	public int rotation;
@@ -176,6 +175,7 @@ public class Piece extends Structure {
 		for (int i=0; i<n_tiles; i+=1)
 			map_occupation_first[i] = occupations.get(tetris_shape)[i].add(map_occupation00);
 		clone_from = occupations.get(shape);
+		structure_type = StructureType.PIECE_UP;
 		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
 		n_chests = chest_pos_relative.get(shape)[rndTemplate].length;
@@ -195,6 +195,8 @@ public class Piece extends Structure {
 		players = new ArrayList<DuoRunner>();
 		lifetime_cooldown = new Cooldown(ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime"), false);
 		ResetPos();
+		
+		this.UpdateMap(structure_type);
 	}
 	
 	public void ResetPos()
@@ -252,7 +254,7 @@ public class Piece extends Structure {
 				DuoDungeonPlugin.logg("Unable to place piece, dungeon is too full... Will likely crash!");
 				return null;
 			}
-			idx.x = MyMath.RandomUInt(map.length);
+			idx.x = DuoMap.game.max_placed_x + 10;
 			idx.z = MyMath.RandomUInt(map[0].length);
 			found = MapIsFreeForTetrisShape(map, idx, shape);
 		}

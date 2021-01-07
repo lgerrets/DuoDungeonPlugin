@@ -37,11 +37,6 @@ module-info.java > "requires <paste>"
 ## Bugs / Todos
 
 Bugs:
-- call SetTeam(none) in Player constructor when Player joins server
-- adventure mode causes builder left click to trigger nothing when clicking on barrier block
-- builder right click triggers place
-- deal with player exit (currently exceptions occur)
-- j'au pu placer une bombe ?!
 
 Todos:
 - checkpoints
@@ -56,6 +51,7 @@ Todos:
   - random #mobs / piece
   - customized health
   - mobs do not move until their piece is active ()
+  - stop natural despawn?
 
 Ideas:
 - enchantments
@@ -64,6 +60,8 @@ Ideas:
   - speed
   - jump boost
   - strength
+  - walk on water/lava
+  - walk in void (close to platforms)
 (- builder can move around, give him several speed boots)
 - builder supply:
   - reroll pièce courrante

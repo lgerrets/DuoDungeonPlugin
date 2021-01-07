@@ -35,7 +35,8 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 
 public class DuoMap {
 	// misc
-	public static ArrayList<Piece> pieces;
+	static public ArrayList<Piece> pieces; // these arrays are static because we want to access them from bukkit runnables
+	static public ArrayList<Checkpoint> checkpoints; // these arrays are static because we want to access them from bukkit runnables
 	private boolean is_running;
 	static public DuoMap game = new DuoMap(false);
 
@@ -48,7 +49,6 @@ public class DuoMap {
 	static public World world = Bukkit.getWorld(ConfigManager.DDConfig.getString("world"));
 	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
 	static public int not_placed_height = 10;
-	static Coords3d bomb_origin = Coords3d.FromWaypoint("bomb");
 	
 	// moving stuff
 	private StructureType moving_type; // can be PIECE or BOMB
@@ -61,6 +61,7 @@ public class DuoMap {
 	private StructureType[][] map;
 	private int[][] square5;
 	private boolean[][] already_decreased_tile_from_square5;
+	public int max_placed_x;
 	private int[][] neighbour_pieces;
 	static private int square5_size = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("superstun_squaresize");
 	static {
@@ -109,7 +110,7 @@ public class DuoMap {
 		this.is_running = is_running;
 		if (is_running)
 		{
-			map = new StructureType[15][21];
+			map = new StructureType[100][21];
 			/*{
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
@@ -128,21 +129,42 @@ public class DuoMap {
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
 			}; //15*21*/
+			checkpoints = new ArrayList<Checkpoint>();
 			for (int x=0; x<map.length; x+=1)
 			{
-				for (int z=0; z<map[0].length; z+=1)
+				StructureType type;
+				int z;
+				for (z=0; z<map[0].length; z+=1)
 				{
-					StructureType type;
 					if (z == 0 || z == map[0].length-1 || x == 0 || x == map.length-1)
 						type = StructureType.BORDER;
 					else if (x == 1)
 						type = StructureType.START;
-					else if (x == map.length-2)
+					/*else if (x == map.length-2)
 						type = StructureType.CHECKPOINT;
 					else if (x == 7 && (z==1 || z==13))
-						type = StructureType.PEACEFUL;
+						type = StructureType.PEACEFUL;*/
 					else
 						type = StructureType.FREE;
+					this.SetMap(x, z, type);
+				}
+			}
+			for (int x=0; x<map.length; x+=1)
+			{
+				if (MyMath.Mod(x, 20) == 0 && x > 1 && x < map.length - 1)
+				{
+					int z = MyMath.RandomUInt(map[0].length-5) + 1;
+					Checkpoint checkpoint = new Checkpoint(new Index2d(x, z));
+					checkpoints.add(checkpoint);
+					checkpoint.InitialClone(pastebin, 0);
+				}
+			}
+			for (int x=0; x<map.length; x+=1)
+			{
+				if (MyMath.Mod(x, 2) == 0 && x > 1 && x < map.length - 1)
+				{
+					int z = MyMath.RandomUInt(map[0].length-3) + 1;
+					StructureType type = StructureType.PEACEFUL;
 					this.SetMap(x, z, type);
 				}
 			}
@@ -153,6 +175,7 @@ public class DuoMap {
 			ClearArea();
 			moving_type = StructureType.PIECE_UP;
 			next_is_bomb = false;
+			max_placed_x = 1;
 			SpawnNewStruct();
 			DuoBuilder.Reset();
 			DuoRunner.Reset();
@@ -221,8 +244,15 @@ public class DuoMap {
 			if(!this.CanPlacePiece())
 				return;
 			
-			// put down the piece (ie y -= not_placed_height)
 			int n_tiles = moving_piece.map_occupation.length;
+			
+			// update max_placed_x
+			for (int idx=0; idx<n_tiles; idx+=1)
+			{
+				max_placed_x = MyMath.Max(max_placed_x, moving_piece.map_occupation[idx].x);
+			}
+			
+			// put down the piece (ie y -= not_placed_height)
 			BlockVector3[] piece_from = new BlockVector3[n_tiles];
 			BlockVector3[] pastebins = new BlockVector3[n_tiles];
 			BlockVector3[] piece_dest = new BlockVector3[n_tiles];
@@ -244,34 +274,25 @@ public class DuoMap {
 		{
 			this.moving_piece = null;
 			next_is_bomb = false;
-			this.SpawnBomb();
+			
+			moving_bomb = Bomb.SpawnBomb(map);
+			moving_struct = moving_bomb;
+			
+			moving_bomb.InitialClone(pastebin, not_placed_height);
 		}
 		else
 		{
 			Piece piece = Piece.SpawnPiece(map);
-			piece.UpdateMap(StructureType.PIECE_UP);
 			pieces.add(piece);
 			
-			int n_tiles = piece.map_occupation.length;
-			BlockVector3[] piece_from = new BlockVector3[n_tiles];
-			BlockVector3[] pastebins = new BlockVector3[n_tiles];
-			BlockVector3[] piece_dest = new BlockVector3[n_tiles];
-			Coords3d template_origin = piece.GetTemplateOrigin();
-			for (int idx=0; idx<n_tiles; idx+=1)
-			{
-				piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.clone_from[idx], template_origin);
-				pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
-				piece_dest[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
-			}
-			
-			MoveTiles(piece_from, pastebins, false, 0);
-			MoveTiles(pastebins, piece_dest, true, 0);
 			moving_piece = piece;
 			moving_struct = piece;
-			moving_type = StructureType.PIECE_UP;
 	
+			piece.InitialClone(pastebin, not_placed_height);
+
 			DuoDungeonPlugin.logg(this.toString());
 		}
+		moving_type = moving_struct.structure_type;
 	}
 	
 	public void ClearArea()
@@ -293,7 +314,6 @@ public class DuoMap {
 				{
 				case START:
 					UpdateNeighbourPieces(x, z, 1);
-				case CHECKPOINT:
 					dy = floor_level;
 					mat = Material.OBSIDIAN.createBlockData();
 					do_fill = true;
@@ -306,6 +326,8 @@ public class DuoMap {
 				case PEACEFUL:
 					BlockVector3 clone_from = Coords3d.FromWaypoint("obstacle").toBlockVector3();
 					WEUtils.CopyRegion(WEWorld, clone_from, clone_from.add(tile_size-1,max_height,tile_size-1), pos, false, 0);
+					break;
+				case CHECKPOINT:
 					break;
 				default:
 					do_clear = true;
@@ -328,40 +350,6 @@ public class DuoMap {
 		}
 		
 		System.out.println("Cleared " + String.valueOf(volume) + " Blocks for the dungeon");
-	}
-	
-	public void SpawnBomb()
-	{
-		boolean found = false;
-		int tries = 0;
-		Index2d bomb_occupation = new Index2d();
-		while (!found)
-		{
-			tries += 1;
-			if (tries > 100)
-			{
-				DuoDungeonPlugin.logg("Unable to place piece, dungeon is too full... Will likely crash!");
-				return;
-			}
-			bomb_occupation.x = MyMath.RandomUInt(map.length);
-			bomb_occupation.z = MyMath.RandomUInt(map[0].length);
-			found = this.GetMap(bomb_occupation.x, bomb_occupation.z, StructureType.EMPTY) == StructureType.FREE;
-		}
-		moving_bomb = new Bomb(bomb_occupation);
-		moving_struct = moving_bomb;
-		moving_bomb.UpdateMap(StructureType.BOMB);
-		moving_type = StructureType.BOMB;
-				
-		BlockVector3[] piece_from = new BlockVector3[1];
-		BlockVector3[] pastebins = new BlockVector3[1];
-		BlockVector3[] piece_dest = new BlockVector3[1];
-		Coords3d template_origin = bomb_origin;
-		piece_from[0] = Coords3d.Index2dToBlockVector3(new Index2d(0,0), template_origin);
-		pastebins[0] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + 0*tile_size)).toBlockVector3();
-		piece_dest[0] = Coords3d.Index2dToBlockVector3(bomb_occupation, dungeon_origin.add(0,not_placed_height,0));
-		
-		MoveTiles(piece_from, pastebins, false, 0);
-		MoveTiles(pastebins, piece_dest, true, 0);
 	}
 	
 	public void TryMoveStruct(Direction d)
