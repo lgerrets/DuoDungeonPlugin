@@ -254,7 +254,7 @@ public class Piece extends Structure {
 				DuoDungeonPlugin.logg("Unable to place piece, dungeon is too full... Will likely crash!");
 				return null;
 			}
-			idx.x = DuoMap.game.max_placed_x + 10;
+			idx.x = DuoMap.game.max_placed_x + DuoMap.struct_spawn_dist;
 			idx.z = MyMath.RandomUInt(map[0].length);
 			found = MapIsFreeForTetrisShape(map, idx, shape);
 		}
@@ -301,9 +301,9 @@ public class Piece extends Structure {
 				DuoDungeonPlugin.logg("WARNING: block " + chest_pos_abs.toString() + " is not a chest: "+block.getType().toString());
 			Chest chest = (Chest) block.getState();
 			ItemStack[] content = new ItemStack[2];
-			content[0] = Drops.DrawDrop(rndRarity, 0, Drops.DropType.UNSPECIFIED);
+			content[0] = Drops.DrawDrop(rndRarity, DuoMap.game.tier-1, Drops.DropType.UNSPECIFIED);
 			if (content[0].getType() != Material.GOLD_NUGGET)
-				content[1] = Drops.DrawDrop(rndRarity, 0, Drops.DropType.MONEY);
+				content[1] = Drops.DrawDrop(rndRarity, DuoMap.game.tier-1, Drops.DropType.MONEY);
 			chest.getInventory().setContents(content);
 		
 			// create a beacon, and place colored stained glass, and check blocks above
@@ -349,7 +349,7 @@ public class Piece extends Structure {
 		}
 		
 		// spawn mobs
-		int n_to_spawn_mobs = 3;
+		int n_to_spawn_mobs = Math.round(((float) DuoMap.game.tier-1) * 0.6f + 1.0f);
 		ArrayList<Coords3d> spawnables = new ArrayList<Coords3d>();
 		for (int i_tile=0; i_tile<n_tiles; i_tile+=1)
 		{
@@ -377,7 +377,7 @@ public class Piece extends Structure {
 		Integer[] rnd_coords = MyMath.RandomUInts(n_to_spawn_mobs, spawnables.size(), true);
 		for(int n_spawned_mobs=0; n_spawned_mobs<n_to_spawn_mobs; n_spawned_mobs+=1)
 		{
-			Spawns.DrawMob(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), 2.0);
+			Spawns.DrawMob(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), DuoMap.game.tier);
 		}
 		
 		// update builder's combo

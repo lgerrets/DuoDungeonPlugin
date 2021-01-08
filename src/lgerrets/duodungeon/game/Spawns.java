@@ -23,19 +23,19 @@ public class Spawns {
 	static private EnumMap<EntityType, Double> mob_score = new EnumMap<EntityType, Double>(EntityType.class);
 	static {
 		mob_score.put(EntityType.ZOMBIE, 1.0);
-		mob_score.put(EntityType.SKELETON, 2.0);
+		mob_score.put(EntityType.SKELETON, 3.0);
 		mob_score.put(EntityType.SPIDER, 2.0);
-		mob_score.put(EntityType.CREEPER, 3.0);
-		mob_score.put(EntityType.CAVE_SPIDER, 4.0);
+		mob_score.put(EntityType.CREEPER, 4.0);
+		mob_score.put(EntityType.CAVE_SPIDER, 5.0);
 	}
 	
 	static private EnumMap<EntityType, Double> mob_health = new EnumMap<EntityType, Double>(EntityType.class);
 	static {
 		mob_health.put(EntityType.ZOMBIE, 6.0);
-		mob_health.put(EntityType.SKELETON, 4.0);
+		mob_health.put(EntityType.SKELETON, 3.0);
 		mob_health.put(EntityType.SPIDER, 4.0);
-		mob_health.put(EntityType.CREEPER, 6.0);
-		mob_health.put(EntityType.CAVE_SPIDER, 4.0);
+		mob_health.put(EntityType.CREEPER, 4.0);
+		mob_health.put(EntityType.CAVE_SPIDER, 3.0);
 	}
 	
 	private enum BonusType {

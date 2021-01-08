@@ -33,7 +33,7 @@ public class Bomb extends Structure {
 				DuoDungeonPlugin.logg("Unable to place piece, dungeon is too full... Will likely crash!");
 				return null;
 			}
-			bomb_occupation.x = DuoMap.game.max_placed_x;
+			bomb_occupation.x = DuoMap.game.max_placed_x + DuoMap.struct_spawn_dist;
 			bomb_occupation.z = MyMath.RandomUInt(map[0].length);
 			found = map[bomb_occupation.x][bomb_occupation.z] == StructureType.FREE;
 		}

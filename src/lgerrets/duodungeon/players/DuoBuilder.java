@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.sk89q.worldedit.regions.CuboidRegion;
 
@@ -45,6 +47,7 @@ public class DuoBuilder extends DuoTeammate {
 	@Override
 	public void Unregister()
 	{
+		player.getPlayer().removePotionEffect(PotionEffectType.SPEED);
 		super.Unregister();
 		Bukkit.getScheduler().cancelTask(taskId);
 	}
@@ -85,6 +88,7 @@ public class DuoBuilder extends DuoTeammate {
 		//WEUtils.FillRegion(DuoMap.WEWorld, new CuboidRegion(coords.add(-3,bottom,-3).toBlockVector3(), coords.add(3,bottom,3).toBlockVector3()), Material.BARRIER.createBlockData());
 		player.getPlayer().teleport(new Location(DuoMap.world, coords.x+0.5, coords.y, coords.z+0.5, -90, 90));
 		player.getPlayer().setHealth(player.getPlayer().getMaxHealth());
+		player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 4, true, false));
 	}
 	
 	static public void Reset()

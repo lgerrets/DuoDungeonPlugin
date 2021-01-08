@@ -53,6 +53,39 @@ Todos:
   - mobs do not move until their piece is active ()
   - stop natural despawn?
 - have only one runnable per class, not per player runner!
+- araignées inoffensive
+- log dd start clear area
+- premier niveau + facile
+  - réduire santé mobs..
+- villageois * 10 dans un cp
+- overlay grille
+- désactiver lianes poussent / grass propage / satiété decrease..
+- checkpoint collision peacefuls
+- lifesteal 5 ?!
+- cp ne fait pas 8x3
+- knockback mobs
+- + d'armes, loot trop bien d'un coup
+- fleches ??
+- empecher de poser dans un coffre
+- 3 items dans coffres
+
++ checkpoit y +3
++ augmenter timers
++ builder speed 2
++ bombes spawn pos??
++ réduire piece distance +10
++ poser à côté d'un cp atteint
++ plafond barriers pour builder
++ tiers
++ pas de skeleton au début
+
+""
+[add] Activate checkpoints on player walk in: increase tier level and enable placing pieces next to it
+[fix] Bomb spawn z
+[fix] Barriers cover the top of dungeon for builder
+[minor] More options in DDConfig.yml
+...
+""
 
 Ideas:
 - enchantments
@@ -71,3 +104,10 @@ Ideas:
   - spawner un dongeon avec loot pété
 - quêtes
   - sauver des villageois
+- bouffe ne regen pas, mais important pour pouvoir courrir
+- boss fight every eg. 5 checkpoints
+  - builder gameplay changes: place walls
+  - minions
+  - builder aims and activates TNTs placed by runner
+
+

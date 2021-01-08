@@ -50,6 +50,14 @@ public class DuoMap {
 	static public com.sk89q.worldedit.world.World WEWorld = new BukkitWorld(world);
 	static public int not_placed_height = 10;
 	
+	// game config
+	static public int piece_lifetime_active = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime_active");
+	static public int struct_spawn_dist = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("struct_spawn_dist");
+	static public int ticks_piece_disappear_sound = ConfigManager.DDConfig.getConfigurationSection("ambience").getInt("ticks_piece_disappear_sound");
+	
+	// game running stats
+	public int tier;
+	
 	// moving stuff
 	private StructureType moving_type; // can be PIECE or BOMB
 	private Structure moving_struct; // can be PIECE or BOMB
@@ -176,6 +184,7 @@ public class DuoMap {
 			moving_type = StructureType.PIECE_UP;
 			next_is_bomb = false;
 			max_placed_x = 1;
+			tier = 1;
 			SpawnNewStruct();
 			DuoBuilder.Reset();
 			DuoRunner.Reset();
@@ -202,13 +211,13 @@ public class DuoMap {
 		            		if (!piece.is_active)
 		            			continue;
 		            		int state = -1;
-		            		if (piece.lifetime_cooldown.cpt == 80)
+		            		if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*4)
 		            			state = 1;
-		            		else if (piece.lifetime_cooldown.cpt == 60)
+		            		else if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*3)
 		            			state = 2;
-		            		else if (piece.lifetime_cooldown.cpt == 40)
+		            		else if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*2)
 		            			state = 3;
-		            		else if (piece.lifetime_cooldown.cpt == 20)
+		            		else if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*1)
 		            			state = 4;
 		            		else if (piece.lifetime_cooldown.isReady())
 		            			state = 999;
@@ -297,6 +306,12 @@ public class DuoMap {
 	
 	public void ClearArea()
 	{
+		CuboidRegion region;
+		BlockVector3 origin = Coords3d.Index2dToBlockVector3(new Index2d(0,0), dungeon_origin);
+		origin = origin.withY(Coords3d.FromWaypoint("builder").y-3);
+		region = new CuboidRegion(WEWorld,  origin, origin.add(map.length*tile_size, 0, map[0].length*tile_size));	
+		WEUtils.FillRegion(WEWorld, region, Material.BARRIER.createBlockData());
+		
 		BlockVector3 pos;
 		int volume = 0;
 		int dy = 0;
@@ -336,7 +351,7 @@ public class DuoMap {
 				
 				if (do_clear || do_fill)
 				{
-					CuboidRegion region = new CuboidRegion(WEWorld, pos, pos.add(tile_size-1, max_height+not_placed_height, tile_size-1));
+					region = new CuboidRegion(WEWorld, pos, pos.add(tile_size-1, max_height+not_placed_height, tile_size-1));
 					WEUtils.FillRegion(WEWorld, region, Material.AIR.createBlockData());
 					volume += region.getVolume();
 					

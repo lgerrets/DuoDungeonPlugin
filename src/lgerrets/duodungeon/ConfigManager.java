@@ -45,7 +45,9 @@ public class ConfigManager {
 		setDefaultIfNotSet(gameConfig, "legendary_drops", 0.02);
 		setDefaultIfNotSet(gameConfig, "superstun_duration", 100);
 		setDefaultIfNotSet(gameConfig, "superstun_squaresize", 5); // (if even, will be made odd)
-		setDefaultIfNotSet(gameConfig, "piece_lifetime", 400);
+		setDefaultIfNotSet(gameConfig, "piece_lifetime", 800);
+		setDefaultIfNotSet(gameConfig, "piece_lifetime_active", 400);
+		setDefaultIfNotSet(gameConfig, "struct_spawn_dist", 8);
 		
 		ConfigurationSection waypoints = setDefaultSectionIfNotSet(DDConfig, "Waypoints");
 		setDefaultWaypointIfNotSet(waypoints, "pastebin"); // origin of a free pastebin area (north-west corner) which extends to the south (z+)
@@ -80,6 +82,7 @@ public class ConfigManager {
 		ConfigurationSection ambience = setDefaultSectionIfNotSet(DDConfig, "ambience");
 		setDefaultIfNotSet(ambience, "volume_piece_near", 0.5);
 		setDefaultIfNotSet(ambience, "volume_piece_active", 1.0);
+		setDefaultIfNotSet(ambience, "ticks_piece_disappear_sound", 50);
 		
 		if(do_save > 0)
 			saveMainConfig();
