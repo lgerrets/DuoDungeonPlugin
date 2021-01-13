@@ -61,4 +61,16 @@ public class DuoDungeonPlugin extends JavaPlugin {
     {
     	System.out.println(obj);
     }
+    
+    public static void err(Object obj)
+    {
+    	shout("ERROR!!!");
+    	System.out.println("Error!!!");
+    	System.out.println(obj);
+    }
+    
+    public static void shout(String msg)
+    {
+    	Bukkit.broadcastMessage(msg);
+    }
 }

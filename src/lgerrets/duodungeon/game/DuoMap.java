@@ -104,7 +104,8 @@ public class DuoMap {
 	    BOMB(5),
 	    HOSTILE(6),
 	    PEACEFUL(7),
-	    PIECE_UP(8)
+	    PIECE_UP(8),
+	    PEACEFUL_INDESTRUCTIBLE_INVISIBLE(9)
 	    ;
 
 	    private final int id;
@@ -157,6 +158,7 @@ public class DuoMap {
 					this.SetMap(x, z, type);
 				}
 			}
+			// place checkpoints (must be done before random asteroids because we want to surround (on z) checkpoints with PEACEFUL_INDESTRUCTIBLE_INVISIBLE (if there is no wall)
 			for (int x=0; x<map.length; x+=1)
 			{
 				if (MyMath.Mod(x, 20) == 0 && x > 1 && x < map.length - 1)
@@ -167,12 +169,18 @@ public class DuoMap {
 					checkpoint.InitialClone(pastebin, 0);
 				}
 			}
+			// place asteroids
 			for (int x=0; x<map.length; x+=1)
 			{
 				if (MyMath.Mod(x, 2) == 0 && x > 1 && x < map.length - 1)
 				{
-					int z = MyMath.RandomUInt(map[0].length-3) + 1;
-					StructureType type = StructureType.PEACEFUL;
+					int z = -1;
+					StructureType type = null;
+					while (this.GetMap(x, z, StructureType.BORDER) != StructureType.FREE)
+					{
+						z = MyMath.RandomUInt(map[0].length-3) + 1;
+						type = StructureType.PEACEFUL;
+					}
 					this.SetMap(x, z, type);
 				}
 			}
@@ -306,6 +314,7 @@ public class DuoMap {
 	
 	public void ClearArea()
 	{
+		DuoDungeonPlugin.shout("Clearing the dungeon. Expect some lag...");
 		CuboidRegion region;
 		BlockVector3 origin = Coords3d.Index2dToBlockVector3(new Index2d(0,0), dungeon_origin);
 		origin = origin.withY(Coords3d.FromWaypoint("builder").y-3);
@@ -365,6 +374,7 @@ public class DuoMap {
 		}
 		
 		System.out.println("Cleared " + String.valueOf(volume) + " Blocks for the dungeon");
+		DuoDungeonPlugin.shout("Starting the game...");
 	}
 	
 	public void TryMoveStruct(Direction d)
@@ -522,7 +532,10 @@ public class DuoMap {
 	
 	public void SetMap(int x, int z, StructureType value)
 	{
-		map[x][z] = value;
+		if (this.IsOutOfBounds(x, z))
+			DuoDungeonPlugin.err(String.valueOf(x) + " " + String.valueOf(z));
+		else
+			map[x][z] = value;
 	}
 	
 	public StructureType GetMap(int x, int z, StructureType default_if_oob)

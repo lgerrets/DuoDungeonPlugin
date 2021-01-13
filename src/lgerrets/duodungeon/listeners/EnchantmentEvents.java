@@ -46,7 +46,7 @@ public class EnchantmentEvents {
 		}
 		
 		@EventHandler
-		public void onKillMob(EntityDamageByEntityEvent event)
+		public void onHitMob(EntityDamageByEntityEvent event)
 		{
 			Entity damager_ent = event.getDamager();
 			Entity damaged_ent = event.getEntity();
@@ -69,6 +69,8 @@ public class EnchantmentEvents {
 				}
 			}
 
+			/*
+			// cancel knockback
 			Vector vel = damaged.getVelocity();
 			Bukkit.getScheduler().scheduleSyncDelayedTask(DuoDungeonPlugin.getInstance(), new Runnable()
             {
@@ -77,7 +79,7 @@ public class EnchantmentEvents {
 					damaged.setVelocity(vel);
 				}
             }
-            , 1L);
+            , 1L);*/
 		}
 	}
 	

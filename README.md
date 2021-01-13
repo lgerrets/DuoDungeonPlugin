@@ -37,6 +37,8 @@ module-info.java > "requires <paste>"
 ## Bugs / Todos
 
 Bugs:
+- as runner, I can double click on gold ingot in my inventory to sneak pick gold in chest
+- parfois, une nouvelle piece ne spawn pas
 
 Todos:
 - checkpoints
@@ -54,21 +56,38 @@ Todos:
   - stop natural despawn?
 - have only one runnable per class, not per player runner!
 - araignées inoffensive
-- log dd start clear area
-- premier niveau + facile
-  - réduire santé mobs..
 - villageois * 10 dans un cp
 - overlay grille
-- désactiver lianes poussent / grass propage / satiété decrease..
-- checkpoint collision peacefuls
-- lifesteal 5 ?!
-- cp ne fait pas 8x3
-- knockback mobs
 - + d'armes, loot trop bien d'un coup
-- fleches ??
-- empecher de poser dans un coffre
-- 3 items dans coffres
+- durabilité
+- boots levitation use la durabilité
+- shop de départ / augmenter la rareté sur les premiers checkpoints (slay the spyre style)
 
+- despawn pieces après 10 pieces
+- cp dans le mauvais sens
+- son quand la piece bouge
+- disparaitre beacons coffres ouverts ou carrément disparaitre le coffre
+- beacon blanc pour les communs
+- augmenter la hauteur max pour cp
+- accéler le countdown de piece despawn
+- empecher la piece/bombe de sortir du champ de vision du builder
+- clear runner inv
+- descendre buider
+- builder invisible
+- mob interdits dans les cp
+
++ checkpoint obstacle des deux côtés
++ empecher de poser dans un coffre
++ 3 items dans coffres
++ checkpoint collision peacefuls
++ cp ne fait pas 8x3
++ désactiver lianes poussent / grass propage
++ fleches ??
++ lifesteal 5 ?!
++ log dd start clear area
++ knockback mobs
+
++ premier niveau + facile
 + checkpoit y +3
 + augmenter timers
 + builder speed 2
@@ -78,14 +97,6 @@ Todos:
 + plafond barriers pour builder
 + tiers
 + pas de skeleton au début
-
-""
-[add] Activate checkpoints on player walk in: increase tier level and enable placing pieces next to it
-[fix] Bomb spawn z
-[fix] Barriers cover the top of dungeon for builder
-[minor] More options in DDConfig.yml
-...
-""
 
 Ideas:
 - enchantments

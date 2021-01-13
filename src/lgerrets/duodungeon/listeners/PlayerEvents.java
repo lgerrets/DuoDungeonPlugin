@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -157,26 +158,49 @@ public class PlayerEvents implements Listener {
     
     @EventHandler
     public void onItemPickedFromChest(InventoryClickEvent e) {
-        Inventory inv = e.getClickedInventory();
-        if (inv == null)
-            return;
-        //if (e.getCurrentItem() == null || e.getCurrentItem().getAmount() == 0)
-        //	return;
-        DuoDungeonPlugin.logg(e.getCursor());
-        InventoryHolder source = inv.getHolder();
-        if (source instanceof Chest)
-        {
-            Chest chest = (Chest) source;
-            //BlockData data = chest.getBlockData();
-            DuoDungeonPlugin.logg(source.toString());
-            ItemStack taking = e.getCurrentItem();
-            chest.getBlockInventory().clear();
-            chest.getBlockInventory().setItem(e.getSlot(), taking);
-            //setContents new ItemStack[1]
-            /*for (int idx=0; idx<inv.getSize(); idx+=1)
-                inv.setItem(idx,  null);*/
-            //chest.update();
-        }
+    	if (DuoMap.game.IsRunning())
+    	{
+	        Inventory inv = e.getClickedInventory();
+	        if (inv == null)
+	            return;
+	        //if (e.getCurrentItem() == null || e.getCurrentItem().getAmount() == 0)
+	        //	return;
+	        DuoDungeonPlugin.logg(e.getCursor());
+	        InventoryHolder source = inv.getHolder();
+	        if (source instanceof Chest)
+	        {
+	        	if(e.getCursor().getType() != Material.AIR)
+	        	{
+	        		e.setCancelled(true);
+	        		return;
+	        	}
+	            Chest chest = (Chest) source;
+	            //BlockData data = chest.getBlockData();
+	            DuoDungeonPlugin.logg(source.toString());
+	            ItemStack taking = e.getCurrentItem();
+	            chest.getBlockInventory().clear();
+	            chest.getBlockInventory().setItem(e.getSlot(), taking);
+	            //setContents new ItemStack[1]
+	            /*for (int idx=0; idx<inv.getSize(); idx+=1)
+	                inv.setItem(idx,  null);*/
+	            //chest.update();
+	        }
+	        else if(source instanceof Player)
+	        {
+	        	Inventory main_inv = e.getInventory();
+	        	InventoryHolder dest = main_inv.getHolder();
+	        	if (dest instanceof Chest)
+	        	{
+	        		DuoDungeonPlugin.logg("player " + source.toString());
+	        		DuoDungeonPlugin.logg(e.getAction());
+	            	if(e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY)
+	            	{
+	            		e.setCancelled(true);
+	            		return;
+	            	}
+	        	}
+	        }
+    	}
     }
 }
 

@@ -91,9 +91,9 @@ public class Drops {
 		// /!\ regarding the quantity: quantity = (score - drop_base_score/2)/supply_scores
 		// also, supplies are obtainable only from COMMON chests
 		temp_scores = new EnumMap<Material, Double>(Material.class);
-		//temp_scores.put(Material.BREAD, 0.5);
-		//temp_scores.put(Material.ARROW, 3.0);
-		//temp_scores.put(Material.TNT, 2.0);
+		temp_scores.put(Material.BREAD, 0.5);
+		temp_scores.put(Material.ARROW, 3.0);
+		temp_scores.put(Material.TNT, 2.0);
 		temp_scores.put(Material.SPLASH_POTION, 3.0);
 		drop_base_score.put(DropType.SUPPLIES, temp_scores);
 		
@@ -144,7 +144,7 @@ public class Drops {
 		temp_enchantments.add(new EnchantedDropData(Enchantment.DAMAGE_ALL, 3, 2));
 		temp_enchantments.add(new EnchantedDropData(Enchantment.DAMAGE_ALL, 5, 4));
 		temp_enchantments.add(new EnchantedDropData(CustomEnchants.LIFESTEAL, 1, 2));
-		temp_enchantments.add(new EnchantedDropData(CustomEnchants.LIFESTEAL, 5, 5));
+		temp_enchantments.add(new EnchantedDropData(CustomEnchants.LIFESTEAL, 2, 5));
 		enchantments_score.put(DropType.MELEE, temp_enchantments);
 		
 		temp_enchantments = new HashSet<EnchantedDropData>();
@@ -180,7 +180,7 @@ public class Drops {
 	CustomEnchants.JUMPY
 	CustomEnchants.STRENGTH*/
 	
-	static public ItemStack DrawDrop(ChestRarity rarity, int tier, DropType force_type)
+	static public ItemStack DrawDrop(ChestRarity rarity, int tier, DropType force_type, DropType not_type)
 	{
 		double max_score = tier*2;
 		double effective_score;
@@ -206,10 +206,10 @@ public class Drops {
 		}
 		
 		// draw DropType
-		DropType dropType = null;
+		DropType dropType = not_type;
 		if (force_type == DropType.UNSPECIFIED) {
 			double min_possible_score = 999;
-			while (min_possible_score > max_score) // eg. do not draw from the bow bucket if max_score is too low
+			while (min_possible_score > max_score || dropType == not_type) // eg. do not draw from the bow bucket if max_score is too low
 			{
 				dropType = MyMath.RandomChoiceUniform(drop_base_score.keySet());
 				min_possible_score = Collections.min(drop_base_score.get(dropType).values());

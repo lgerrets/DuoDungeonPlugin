@@ -57,6 +57,19 @@ public class Checkpoint extends Structure {
 		structure_type = StructureType.CHECKPOINT;
 		this.UpdateMap(structure_type);
 		active = false;
+		
+		Index2d[] put_invisible = new Index2d[] {
+				new Index2d(0,-1), new Index2d(1,-1), new Index2d(2,-1),
+				new Index2d(0,3), new Index2d(1,3), new Index2d(2,3),
+		};
+		for (Index2d idx : put_invisible)
+		{
+			idx = idx.add(map_occupation00);
+			if (DuoMap.game.GetMap(idx.x, idx.z, StructureType.EMPTY) == StructureType.FREE)
+			{
+				DuoMap.game.SetMap(idx.x, idx.z, StructureType.PEACEFUL_INDESTRUCTIBLE_INVISIBLE);
+			}
+		}
 	}
 
 	public Coords3d GetTemplateOrigin() {
