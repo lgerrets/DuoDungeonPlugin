@@ -1,5 +1,7 @@
 package lgerrets.duodungeon.game;
 
+import org.bukkit.Sound;
+
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DuoMap.StructureType;
 import lgerrets.duodungeon.game.Piece.TetrisShape;
@@ -17,6 +19,7 @@ public class Bomb extends Structure {
 		n_tiles = 1;
 		clone_from = new Index2d[] {new Index2d(0,0) };
 		structure_type = StructureType.BOMB;
+		moving_sound = Sound.ENTITY_CREEPER_PRIMED;
 		this.UpdateMap(structure_type);
 	}
 	
@@ -42,5 +45,10 @@ public class Bomb extends Structure {
 
 	public Coords3d GetTemplateOrigin() {
 		return bomb_origin;
+	}
+	
+	public void Delete() {
+		PlaySound(Sound.ENTITY_GENERIC_EXPLODE, 0);
+		super.Delete();
 	}
 }

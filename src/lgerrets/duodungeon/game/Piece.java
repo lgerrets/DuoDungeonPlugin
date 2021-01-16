@@ -164,7 +164,6 @@ public class Piece extends Structure {
 	public boolean is_active;
 	public Cooldown lifetime_cooldown;
 	public ArrayList<DuoRunner> players;
-	public Coords3d placed_pos;
 	
 	public Piece(TetrisShape tetris_shape, Index2d map_occupation00)
 	{
@@ -176,6 +175,7 @@ public class Piece extends Structure {
 			map_occupation_first[i] = occupations.get(tetris_shape)[i].add(map_occupation00);
 		clone_from = occupations.get(shape);
 		structure_type = StructureType.PIECE_UP;
+		moving_sound = Sound.BLOCK_SNOW_PLACE;
 		// TODO: random init rotation
 		rndTemplate = MyMath.RandomUInt(n_templates.get(shape));
 		n_chests = chest_pos_relative.get(shape)[rndTemplate].length;
@@ -212,7 +212,7 @@ public class Piece extends Structure {
 	@Override
 	public void Delete()
 	{
-		PlaySound(Sound.BLOCK_STONE_BREAK, 1);
+		PlaySoundLocal(Sound.BLOCK_STONE_BREAK, 1);
 		DuoMap.pieces.remove(this);
 		for (DuoRunner runner : players)
 		{
@@ -251,7 +251,7 @@ public class Piece extends Structure {
 			tries += 1;
 			if (tries > 100)
 			{
-				DuoDungeonPlugin.logg("Unable to place piece, dungeon is too full... Will likely crash!");
+				DuoDungeonPlugin.err("Unable to place piece, dungeon is too full... Will likely crash!");
 				return null;
 			}
 			idx.x = DuoMap.game.max_placed_x + DuoMap.struct_spawn_dist;
@@ -268,15 +268,6 @@ public class Piece extends Structure {
 		// compute rotation stuff
 		/*for (int i=0; i<MyMath.Mod(rotation, 4); i+=1)
 			updateRotation(false);*/
-		
-		// compute approx center of piece
-		this.placed_pos = new Coords3d(0,0,0);
-		for (Index2d idx : this.map_occupation)
-		{
-			this.placed_pos = this.placed_pos.add(Coords3d.Index2dToCoords3d(idx, map_origin));
-		}
-		this.placed_pos = this.placed_pos.scale(1.0/this.n_tiles);
-		this.placed_pos = this.placed_pos.add(tile_size/2, 0, tile_size/2);
 		
 		if (n_chests > 0)
 		{
@@ -365,7 +356,7 @@ public class Piece extends Structure {
 						{
 							if(DuoMap.world.getBlockAt(x, y, z).getType().isOccluding())
 							{
-								spawnables.add(new Coords3d(x,y+1,z));
+								spawnables.add(new Coords3d(x,y,z));
 							}
 							y += 3;
 						}
@@ -378,7 +369,7 @@ public class Piece extends Structure {
 		Integer[] rnd_coords = MyMath.RandomUInts(n_to_spawn_mobs, spawnables.size(), true);
 		for(int n_spawned_mobs=0; n_spawned_mobs<n_to_spawn_mobs; n_spawned_mobs+=1)
 		{
-			Spawns.DrawMob(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world), DuoMap.game.tier);
+			Spawns.DrawMob(spawnables.get(rnd_coords[n_spawned_mobs]).toLocation(DuoMap.world).add(0.5,1,0.5), DuoMap.game.tier);
 		}
 		
 		// update builder's combo
@@ -390,6 +381,9 @@ public class Piece extends Structure {
 		{
 			DuoMap.game.PlaceTileAt(map_occupation[i_tile].x, map_occupation[i_tile].z);
 		}
+		
+		// play sound
+		PlaySound(Sound.BLOCK_WOOD_PLACE, 0);
 		
 		is_placed = true;
 	}
@@ -427,7 +421,7 @@ public class Piece extends Structure {
 		}
 	}
 	
-	public void PlaySound(Sound s, int pitch)
+	public void PlaySoundLocal(Sound s, int pitch) // play sound only to runners on this piece
 	{
 		Location loc = this.placed_pos.add(0,DuoMap.floor_level,0).toLocation(DuoMap.world);
 		double volume;

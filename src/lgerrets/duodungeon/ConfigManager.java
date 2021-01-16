@@ -35,7 +35,7 @@ public class ConfigManager {
 
 		setDefaultIfNotSet(DDConfig, "verbose", 0);
 		setDefaultIfNotSet(DDConfig, "tile_size", 6);
-		setDefaultIfNotSet(DDConfig, "max_height", 20);
+		setDefaultIfNotSet(DDConfig, "max_height", 30);
 		setDefaultIfNotSet(DDConfig, "floor_level", 5);
 		setDefaultIfNotSet(DDConfig, "world", "world");
 
@@ -48,6 +48,8 @@ public class ConfigManager {
 		setDefaultIfNotSet(gameConfig, "piece_lifetime", 800);
 		setDefaultIfNotSet(gameConfig, "piece_lifetime_active", 400);
 		setDefaultIfNotSet(gameConfig, "struct_spawn_dist", 8);
+		setDefaultIfNotSet(gameConfig, "x_delta_asteroids", 2);
+		setDefaultIfNotSet(gameConfig, "x_delta_checkpoints", 20);
 		
 		ConfigurationSection waypoints = setDefaultSectionIfNotSet(DDConfig, "Waypoints");
 		setDefaultWaypointIfNotSet(waypoints, "pastebin"); // origin of a free pastebin area (north-west corner) which extends to the south (z+)

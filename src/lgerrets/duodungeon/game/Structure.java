@@ -4,16 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Predicate;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 
+import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DuoMap.StructureType;
+import lgerrets.duodungeon.players.DuoBuilder;
+import lgerrets.duodungeon.players.DuoRunner;
+import lgerrets.duodungeon.players.DuoTeam;
 import lgerrets.duodungeon.utils.Coords3d;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.WEUtils;
@@ -25,7 +32,9 @@ public abstract class Structure {
 	protected int n_tiles;
 	public Index2d map_occupation00;
 	public StructureType structure_type;
-	
+	public Coords3d placed_pos;
+	protected Sound moving_sound;
+
 	public static class IsMob<Entity> implements Predicate<Entity> {
 		@Override
 		public boolean test(Entity o) {
@@ -61,7 +70,15 @@ public abstract class Structure {
 	{
 		map_occupation = map_occupation_;
 		this.map_occupation00 = map_occupation00;
-		DuoDungeonPlugin.logg(this.map_occupation00.toString());
+		
+		// compute approx center of piece
+		this.placed_pos = new Coords3d(0,0,0);
+		for (Index2d idx : this.map_occupation)
+		{
+			this.placed_pos = this.placed_pos.add(Coords3d.Index2dToCoords3d(idx, DuoMap.dungeon_origin));
+		}
+		this.placed_pos = this.placed_pos.scale(1.0/this.n_tiles);
+		this.placed_pos = this.placed_pos.add(tile_size/2, 0, tile_size/2);
 	}
 	
 	public void UpdateMap(DuoMap.StructureType type)
@@ -114,6 +131,26 @@ public abstract class Structure {
 		
 		DuoMap.game.MoveTiles(piece_from, pastebins, false, 0);
 		DuoMap.game.MoveTiles(pastebins, piece_dest, true, 0);
+	}
+	
+	public void PlaySoundMoving() {
+		PlaySound(moving_sound, 1);
+	}
+	
+	public void PlaySound(Sound sound, int pitch)
+	{
+		Location loc = this.placed_pos.add(0,DuoMap.floor_level,0).toLocation(DuoMap.world);
+		double volume;
+		for (DuoRunner runner : DuoTeam.runner_players)
+		{
+			Player p = runner.getDuoPlayer().getPlayer();
+			p.playSound(loc, sound, (float) 1.0, pitch);
+		}
+		for (DuoBuilder builder : DuoTeam.builder_players)
+		{
+			Player p = builder.getDuoPlayer().getPlayer();
+			p.playSound(loc, sound, (float) 10.0, pitch);
+		}
 	}
 	
 	abstract public Coords3d GetTemplateOrigin();

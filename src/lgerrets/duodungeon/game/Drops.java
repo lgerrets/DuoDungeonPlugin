@@ -122,7 +122,7 @@ public class Drops {
 		countable_scores.put(Material.TNT, new CountableDropData(0.5));
 		countable_scores.put(Material.SPLASH_POTION, new CountableDropData(1.0));
 		// money
-		countable_scores.put(Material.GOLD_NUGGET, new CountableDropData(0.2));
+		countable_scores.put(Material.GOLD_NUGGET, new CountableDropData(1.0));
 	}
 	
 	static private class EnchantedDropData {

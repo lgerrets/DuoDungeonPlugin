@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -67,8 +68,10 @@ public class DuoRunner extends DuoTeammate {
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.ARROW);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.BREAD);
 		Coords3d coords = Coords3d.FromWaypoint("runner");
-		player.getPlayer().teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 0));
-		player.getPlayer().setHealth(player.getPlayer().getMaxHealth());
+		Player p = player.getPlayer();
+		p.teleport(new Location(DuoMap.world, coords.x, coords.y, coords.z, -90, 0));
+		super.ResetTeammate();
+		p.setSaturation(10);
 	}
 	
 	@Override

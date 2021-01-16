@@ -1,8 +1,18 @@
 package lgerrets.duodungeon.game;
 
-import org.bukkit.Bukkit;
+import java.util.ArrayList;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
+import lgerrets.duodungeon.game.Drops.ChestRarity;
+import lgerrets.duodungeon.game.Drops.DropType;
 import lgerrets.duodungeon.game.DuoMap.StructureType;
 import lgerrets.duodungeon.players.DuoRunner;
 import lgerrets.duodungeon.players.DuoTeam;
@@ -41,6 +51,8 @@ public class Checkpoint extends Structure {
 	}
 	
 	private boolean active;
+	private Coords3d merchant_pos;
+	private Merchant merchant;
 	
 	public Checkpoint(Index2d occupation)
 	{
@@ -54,10 +66,12 @@ public class Checkpoint extends Structure {
 		map_occupation = new Index2d[n_tiles];
 		for (int idx=0; idx<n_tiles; idx+=1)
 			map_occupation[idx] = map_occupation00.add(clone_from[idx]);
+		this.SetMapOccupation(map_occupation, map_occupation00);
 		structure_type = StructureType.CHECKPOINT;
 		this.UpdateMap(structure_type);
 		active = false;
 		
+		// z-surround the checkpoint with indestructible invisible obstacle tiles
 		Index2d[] put_invisible = new Index2d[] {
 				new Index2d(0,-1), new Index2d(1,-1), new Index2d(2,-1),
 				new Index2d(0,3), new Index2d(1,3), new Index2d(2,3),
@@ -82,5 +96,35 @@ public class Checkpoint extends Structure {
 		for (int idx=0; idx<n_tiles; idx+=1)
 			DuoMap.game.UpdateNeighbourPieces(map_occupation[idx].x, map_occupation[idx].z, 1);
 		DuoMap.game.tier += 1;
+		
+		// play sound
+		Location loc = this.placed_pos.add(0,DuoMap.floor_level,0).toLocation(DuoMap.world);
+		double volume = 1.0;
+		for (DuoRunner runner : DuoTeam.runner_players)
+		{
+			Player p = runner.getDuoPlayer().getPlayer();
+			p.playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, (float) volume, 1);
+		}
+		
+		// find pos of villager merchant
+		ArrayList<Coords3d> vill_pos = new ArrayList<Coords3d>();
+		for (Index2d tile_idx : map_occupation) // loop through all tiles of template
+		{
+			Coords3d tile_origin = Coords3d.Index2dToCoords3d(tile_idx, DuoMap.dungeon_origin); // tile origin
+			vill_pos.addAll(SearchBlock(tile_origin, Material.GOLD_BLOCK));
+		}
+		if (vill_pos.size() != 1)
+			DuoDungeonPlugin.err("Found " + String.valueOf(vill_pos.size()) + " gold blocks in a checkpoint, but I expected 1.");
+		merchant_pos = vill_pos.get(0);
+		DuoDungeonPlugin.logg(merchant_pos);
+		
+		// summon merchant
+		merchant = new Merchant(merchant_pos.toLocation(DuoMap.world).add(0.5,1.,0.5));
+		for (int i_recipe=0; i_recipe<5; i_recipe+=1) {
+			ItemStack result = Drops.DrawDrop(ChestRarity.LEGENDARY, DuoMap.game.tier, DropType.UNSPECIFIED, DropType.MONEY);
+			ItemStack item1 = Drops.DrawDrop(ChestRarity.LEGENDARY, DuoMap.game.tier, DropType.MONEY, DropType.UNSPECIFIED);
+			item1.setAmount(item1.getAmount());
+			merchant.AddRecipe(result, item1);
+		}
 	}
 }

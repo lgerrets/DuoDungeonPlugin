@@ -69,16 +69,17 @@ public class DuoBuilder extends DuoTeammate {
 	
 	public void ResetBuilder()
 	{
+		Player p = player.getPlayer();
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.STONE_BUTTON);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.TNT);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.GOLD_NUGGET);
-		player.getPlayer().setGameMode(GameMode.SURVIVAL);
+		p.setGameMode(GameMode.SURVIVAL);
 		ItemStack buttons = new ItemStack(Material.STONE_BUTTON);
 		ItemMeta meta = buttons.getItemMeta();
 		meta.setDisplayName("TETRIS");
 		buttons.setItemMeta(meta);
-		InvUtils.addItems(player.getPlayer(), 64, buttons);
-		InvUtils.addItems(player.getPlayer(), 3, Material.TNT);
+		InvUtils.addItems(p, 64, buttons);
+		InvUtils.addItems(p, 3, Material.TNT);
 		combo = 0.0;
 		goldCpt = 0.0;
 		Coords3d coords = Coords3d.FromWaypoint("builder");
@@ -86,9 +87,11 @@ public class DuoBuilder extends DuoTeammate {
 		//WEUtils.FillRegion(DuoMap.WEWorld, new CuboidRegion(coords.add(-3,0,-3).toBlockVector3(), coords.add(3,bottom,3).toBlockVector3()), Material.AIR.createBlockData());
 		//DuoMap.world.getBlockAt(coords.x, coords.y-2, coords.z).setType(Material.WHITE_STAINED_GLASS_PANE);
 		//WEUtils.FillRegion(DuoMap.WEWorld, new CuboidRegion(coords.add(-3,bottom,-3).toBlockVector3(), coords.add(3,bottom,3).toBlockVector3()), Material.BARRIER.createBlockData());
-		player.getPlayer().teleport(new Location(DuoMap.world, coords.x+0.5, coords.y, coords.z+0.5, -90, 90));
-		player.getPlayer().setHealth(player.getPlayer().getMaxHealth());
-		player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 4, true, false));
+		p.teleport(new Location(DuoMap.world, coords.x+0.5, coords.y, coords.z+0.5, -90, 90));
+		super.ResetTeammate();
+		p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 4, true, false));
+		p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, true, false));
+		p.setSaturation(100000);
 	}
 	
 	static public void Reset()

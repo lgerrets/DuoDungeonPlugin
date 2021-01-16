@@ -1,5 +1,8 @@
 package lgerrets.duodungeon.players;
 
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+
 import lgerrets.duodungeon.DuoDungeonPlugin;
 
 public class DuoTeammate {
@@ -8,6 +11,15 @@ public class DuoTeammate {
 	
 	public DuoTeammate(DuoPlayer player) {
 		this.player = player;
+	}
+	
+	public void ResetTeammate()
+	{
+		Player p = player.getPlayer();
+		p.setHealth(player.getPlayer().getMaxHealth());
+		for(PotionEffect effect : p.getActivePotionEffects())
+			p.removePotionEffect(effect.getType());
+		p.setFoodLevel(20);
 	}
 	
 	public DuoPlayer getDuoPlayer() {

@@ -38,15 +38,11 @@ module-info.java > "requires <paste>"
 
 Bugs:
 - as runner, I can double click on gold ingot in my inventory to sneak pick gold in chest
-- parfois, une nouvelle piece ne spawn pas
+- parfois, une nouvelle piece ne spawn pas => loggé
+- on clear area, also clear entities (eg villagers)
 
 Todos:
-- checkpoints
 - life loss
-+ default structures on map
-+ missile
-+ show mobs' health on top of their head (=> in action bar with ActionHealth plugin)
-+ put beacon at bottom of piece => allow chests to be put in heights
 - mobs:
   - without helmet + fire resistance, to give runners fire on melee hit
   - no natural mob spawn
@@ -56,25 +52,31 @@ Todos:
   - stop natural despawn?
 - have only one runnable per class, not per player runner!
 - araignées inoffensive
-- villageois * 10 dans un cp
 - overlay grille
 - + d'armes, loot trop bien d'un coup
-- durabilité
 - boots levitation use la durabilité
 - shop de départ / augmenter la rareté sur les premiers checkpoints (slay the spyre style)
 
 - despawn pieces après 10 pieces
 - cp dans le mauvais sens
-- son quand la piece bouge
 - disparaitre beacons coffres ouverts ou carrément disparaitre le coffre
 - beacon blanc pour les communs
-- augmenter la hauteur max pour cp
-- accéler le countdown de piece despawn
+- accéler le countdown de piece despawn (5 ... 4 ... 3 .. 2 .. 1 . 0) + simplifier son (pas de condition de distance ...)
 - empecher la piece/bombe de sortir du champ de vision du builder
 - clear runner inv
 - descendre buider
-- builder invisible
 - mob interdits dans les cp
+- on mob creation mob.setRemoveWhenFarAway(false);
+
+commit
+- augmenter la hauteur max pour cp
+- marchands aux checkpoints
+- spawn mobs and merchants at center
+- play sound on piece placed
+- son quand la piece bouge
+- config params
+- sert hunger and saturation (huge for builder)
+- builder invisible
 
 + checkpoint obstacle des deux côtés
 + empecher de poser dans un coffre
@@ -120,5 +122,6 @@ Ideas:
   - builder gameplay changes: place walls
   - minions
   - builder aims and activates TNTs placed by runner
+- durabilité des equipements comme facteur de gameplay
 
 

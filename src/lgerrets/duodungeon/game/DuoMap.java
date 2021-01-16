@@ -161,7 +161,7 @@ public class DuoMap {
 			// place checkpoints (must be done before random asteroids because we want to surround (on z) checkpoints with PEACEFUL_INDESTRUCTIBLE_INVISIBLE (if there is no wall)
 			for (int x=0; x<map.length; x+=1)
 			{
-				if (MyMath.Mod(x, 20) == 0 && x > 1 && x < map.length - 1)
+				if (MyMath.Mod(x, ConfigManager.DDConfig.getConfigurationSection("Game").getInt("x_delta_checkpoints")) == 0 && x > 1 && x < map.length - 1)
 				{
 					int z = MyMath.RandomUInt(map[0].length-5) + 1;
 					Checkpoint checkpoint = new Checkpoint(new Index2d(x, z));
@@ -172,7 +172,7 @@ public class DuoMap {
 			// place asteroids
 			for (int x=0; x<map.length; x+=1)
 			{
-				if (MyMath.Mod(x, 2) == 0 && x > 1 && x < map.length - 1)
+				if (MyMath.Mod(x, ConfigManager.DDConfig.getConfigurationSection("Game").getInt("x_delta_asteroids")) == 0 && x > 1 && x < map.length - 1)
 				{
 					int z = -1;
 					StructureType type = null;
@@ -234,7 +234,7 @@ public class DuoMap {
 		        			else if (state < 0) {}
 		        			else
 		        			{
-		        				piece.PlaySound(Sound.ENTITY_ARMOR_STAND_HIT, state);
+		        				piece.PlaySoundLocal(Sound.ENTITY_ARMOR_STAND_HIT, state);
 		        				piece.PlayCracks(dungeon_origin, state);
 		        			}
 	            		}
@@ -423,7 +423,6 @@ public class DuoMap {
 			case PEACEFUL:
 				// explode bomb
 				MoveStruct(moving_struct, newcoords, moving_struct.map_occupation00.CalculateTranslation(1,d), true, 0);
-				PlaySound(Sound.ENTITY_GENERIC_EXPLODE, 0);
 				moving_struct.Delete();
 				this.moving_type = StructureType.PIECE_UP;
 				this.SpawnNewStruct();
@@ -441,26 +440,27 @@ public class DuoMap {
 		}
 	}
 	
-	public void MoveStruct(Structure piece, Index2d[] destination, Index2d map_occupation00, boolean cut, int rotation)
+	public void MoveStruct(Structure struct, Index2d[] destination, Index2d map_occupation00, boolean cut, int rotation)
 	{
-		int n_tiles = piece.map_occupation.length;
-		BlockVector3[] piece_from = new BlockVector3[n_tiles];
+		int n_tiles = struct.map_occupation.length;
+		BlockVector3[] struct_from = new BlockVector3[n_tiles];
 		BlockVector3[] pastebins = new BlockVector3[n_tiles];
 		BlockVector3[] piece_dest = new BlockVector3[n_tiles];
 		for (int idx=0; idx<n_tiles; idx+=1)
 		{
-			piece_from[idx] = Coords3d.Index2dToBlockVector3(piece.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
+			struct_from[idx] = Coords3d.Index2dToBlockVector3(struct.map_occupation[idx], dungeon_origin.add(0,not_placed_height,0));
 			pastebins[idx] = (new Coords3d(pastebin.x, pastebin.y, pastebin.z + idx*tile_size)).toBlockVector3();
 			piece_dest[idx] = Coords3d.Index2dToBlockVector3(destination[idx], dungeon_origin.add(0,not_placed_height,0));
 		}
 		
-		MoveTiles(piece_from, pastebins, cut, 0);
+		MoveTiles(struct_from, pastebins, cut, 0);
 		MoveTiles(pastebins, piece_dest, true, rotation);
 		
-		piece.UpdateMap(StructureType.FREE);
-		piece.SetMapOccupation(destination, map_occupation00);
-		piece.UpdateMap(this.moving_type);
-		DuoDungeonPlugin.logg(DuoMap.game.toString());
+		struct.UpdateMap(StructureType.FREE);
+		struct.SetMapOccupation(destination, map_occupation00);
+		struct.UpdateMap(this.moving_type);
+		struct.PlaySoundMoving();
+		//DuoDungeonPlugin.logg(DuoMap.game.toString());
 	}
 	
 	public void TryRotatePiece(boolean orientation)
