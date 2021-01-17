@@ -27,6 +27,7 @@ import lgerrets.duodungeon.players.DuoTeam;
 import lgerrets.duodungeon.utils.Cooldown;
 import lgerrets.duodungeon.utils.Index2d;
 import lgerrets.duodungeon.utils.Index2d.Direction;
+import lgerrets.duodungeon.utils.InvUtils;
 
 public class PlayerEvents implements Listener {
 	
@@ -171,19 +172,24 @@ public class PlayerEvents implements Listener {
 	        {
 	        	if(e.getCursor().getType() != Material.AIR)
 	        	{
-	        		e.setCancelled(true);
+	        		e.setCancelled(true); // cancelling because we don't players to put items into chests
 	        		return;
 	        	}
-	            Chest chest = (Chest) source;
-	            //BlockData data = chest.getBlockData();
-	            DuoDungeonPlugin.logg(source.toString());
-	            ItemStack taking = e.getCurrentItem();
-	            chest.getBlockInventory().clear();
-	            chest.getBlockInventory().setItem(e.getSlot(), taking);
-	            //setContents new ItemStack[1]
-	            /*for (int idx=0; idx<inv.getSize(); idx+=1)
-	                inv.setItem(idx,  null);*/
-	            //chest.update();
+	        	else { // we deal with the fact that the player is taking an item. TODO we would not catch a player taking items by double clicking a stackable item in his own inventory!!!
+		            Chest chest = (Chest) source;
+		            //BlockData data = chest.getBlockData();
+		            DuoDungeonPlugin.logg(source.toString());
+		            ItemStack taking = e.getCurrentItem();
+		            chest.getBlockInventory().clear(); // we clear the chest's inventory
+		            Player p = (Player) e.getWhoClicked();
+		            InvUtils.addItems(p, taking); // ... but still give the one item the player was trying to take
+		            // chest.getBlockInventory().setItem(e.getSlot(), taking);
+		            //setContents new ItemStack[1]
+		            /*for (int idx=0; idx<inv.getSize(); idx+=1)
+		                inv.setItem(idx,  null);*/
+		            //chest.update();
+		            DuoMap.game.world.getBlockAt(chest.getLocation()).setType(Material.COBBLESTONE);
+	        	}
 	        }
 	        else if(source instanceof Player)
 	        {
@@ -195,7 +201,7 @@ public class PlayerEvents implements Listener {
 	        		DuoDungeonPlugin.logg(e.getAction());
 	            	if(e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY)
 	            	{
-	            		e.setCancelled(true);
+	            		e.setCancelled(true); // cancelling because we don't players to put items into chests
 	            		return;
 	            	}
 	        	}

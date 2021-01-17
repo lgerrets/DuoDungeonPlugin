@@ -198,7 +198,7 @@ public class Drops {
 			max_score += 7;
 			break;
 		}
-		DuoDungeonPlugin.logg("Max drop score is " + String.valueOf(max_score));
+		// DuoDungeonPlugin.logg("Max drop score is " + String.valueOf(max_score));
 		if (max_score < 1)
 		{
 			DuoDungeonPlugin.logg("Hard setting max_score to 1!");
@@ -303,11 +303,13 @@ public class Drops {
 		default:
 			break;
 		}
-		DuoDungeonPlugin.logg(item.toString() + " " + item.getItemMeta().getEnchants().toString());
+		// DuoDungeonPlugin.logg(item.toString() + " " + item.getItemMeta().getEnchants().toString());
 
-		DuoDungeonPlugin.logg(rarity.toString() + " " + String.valueOf(effective_score) + "/" + String.valueOf(max_score));
+		// DuoDungeonPlugin.logg(rarity.toString() + " " + String.valueOf(effective_score) + "/" + String.valueOf(max_score));
 		if (effective_score != max_score)
-			DuoDungeonPlugin.logg("The drop does not have the full potential score");
+		{
+		//	DuoDungeonPlugin.logg("The drop does not have the full potential score");
+		}
 		return item;
 	}
 }

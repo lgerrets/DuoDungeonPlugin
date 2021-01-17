@@ -85,4 +85,8 @@ public class Index2d {
     	}
     	return d;
 	}
+
+	public Index2d add(int x, int z) {
+		return new Index2d(this.x + x, this.z + z);
+	}
 }

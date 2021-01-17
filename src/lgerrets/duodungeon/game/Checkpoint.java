@@ -1,13 +1,16 @@
 package lgerrets.duodungeon.game;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.BoundingBox;
 
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
@@ -34,6 +37,9 @@ public class Checkpoint extends Structure {
         	{
         		for (Checkpoint cp : DuoMap.game.checkpoints)
         		{
+        			cp.mobs = DuoMap.world.getNearbyEntities(cp.bbox, new Structure.IsMob());
+        			for (Mob mob : cp.mobs)
+        				mob.setAI(false);
         			if (!cp.active) {
 		        		for (DuoRunner runner : DuoTeam.runner_players)
 		        		{
@@ -53,6 +59,8 @@ public class Checkpoint extends Structure {
 	private boolean active;
 	private Coords3d merchant_pos;
 	private Merchant merchant;
+	private Collection<Mob> mobs;
+	private BoundingBox bbox;
 	
 	public Checkpoint(Index2d occupation)
 	{
@@ -61,7 +69,7 @@ public class Checkpoint extends Structure {
 				new Index2d(0,0), new Index2d(1,0), new Index2d(2,0),
 				new Index2d(0,1), new Index2d(1,1), new Index2d(2,1),
 				new Index2d(0,2), new Index2d(1,2), new Index2d(2,2),
-				};
+				}; 	// !!! IN MANY PLACES IN Checkpoint.java, THIS IS ASSUMED TO BE A SQUARE
 		n_tiles = clone_from.length;
 		map_occupation = new Index2d[n_tiles];
 		for (int idx=0; idx<n_tiles; idx+=1)
@@ -84,6 +92,10 @@ public class Checkpoint extends Structure {
 				DuoMap.game.SetMap(idx.x, idx.z, StructureType.PEACEFUL_INDESTRUCTIBLE_INVISIBLE);
 			}
 		}
+		
+		// init bbox
+		bbox = BoundingBox.of(Coords3d.Index2dToLocation(map_occupation[0], DuoMap.dungeon_origin), 
+				Coords3d.Index2dToLocation(map_occupation[map_occupation.length-1].add(1,1), DuoMap.dungeon_origin).add(-1,DuoMap.max_height,-1));
 	}
 
 	public Coords3d GetTemplateOrigin() {
@@ -126,5 +138,10 @@ public class Checkpoint extends Structure {
 			item1.setAmount(item1.getAmount());
 			merchant.AddRecipe(result, item1);
 		}
+	}
+	
+	public boolean HasCoords3d(Coords3d coords)
+	{
+		return bbox.contains(coords.x, coords.y, coords.z);
 	}
 }

@@ -15,8 +15,13 @@ public class Cooldown {
 	
 	public void tick()
 	{
+		this.tick(1);
+	}
+	
+	public void tick(int delta)
+	{
 		if (cpt > 0)
-			cpt -= 1;
+			cpt -= delta;
 	}
 	
 	public boolean isReady()

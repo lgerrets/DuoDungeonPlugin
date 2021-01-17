@@ -38,4 +38,9 @@ public class InvUtils {
 		items.setAmount(amount);
 		p.getInventory().addItem(items);
 	}
+	
+	static public void addItems(Player p, ItemStack items)
+	{
+		p.getInventory().addItem(items);
+	}
 }

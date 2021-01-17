@@ -47,6 +47,9 @@ public class ConfigManager {
 		setDefaultIfNotSet(gameConfig, "superstun_squaresize", 5); // (if even, will be made odd)
 		setDefaultIfNotSet(gameConfig, "piece_lifetime", 800);
 		setDefaultIfNotSet(gameConfig, "piece_lifetime_active", 400);
+		setDefaultIfNotSet(gameConfig, "piece_onactive_set_minlifetime", 200);
+		setDefaultIfNotSet(gameConfig, "npieces_decrease_lifetime", 10); // when this number of pieces are still alive, placing a new piece will decrease all current pieces' lifetimes by ...
+		setDefaultIfNotSet(gameConfig, "npieces_decrease_lifetime_by", 100); // ... this much
 		setDefaultIfNotSet(gameConfig, "struct_spawn_dist", 8);
 		setDefaultIfNotSet(gameConfig, "x_delta_asteroids", 2);
 		setDefaultIfNotSet(gameConfig, "x_delta_checkpoints", 20);
@@ -79,7 +82,7 @@ public class ConfigManager {
 		ConfigurationSection controls = setDefaultSectionIfNotSet(DDConfig, "Controls");
 		setDefaultIfNotSet(controls, "builder_move_cooldown", 5);
 		setDefaultIfNotSet(controls, "builder_act_cooldown", 3);
-		//setDefaultIfNotSet(controls, "builder_resetpos_cooldown", 20);
+		setDefaultIfNotSet(controls, "builder_maxdx_from_controledstruct", 130);
 		
 		ConfigurationSection ambience = setDefaultSectionIfNotSet(DDConfig, "ambience");
 		setDefaultIfNotSet(ambience, "volume_piece_near", 0.5);

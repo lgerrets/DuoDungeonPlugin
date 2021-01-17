@@ -150,6 +150,64 @@ public class Piece extends Structure {
 			chest_pos_relative.put(shape_, shape_pos);
 		}
 	}
+	
+	static public int ticks_piece_disappear_sound = ConfigManager.DDConfig.getConfigurationSection("ambience").getInt("ticks_piece_disappear_sound");
+	static public int piece_onactive_set_minlifetime = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_onactive_set_minlifetime");
+	static public int npieces_decrease_lifetime = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("npieces_decrease_lifetime");
+	static public int npieces_decrease_lifetime_by = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("npieces_decrease_lifetime_by");
+	static {
+	    Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {
+	        @Override
+	        public void run() {
+	        	if (DuoMap.game.IsRunning())
+	        	{
+	        		ArrayList<Piece> to_delete = new ArrayList<Piece>();
+	        		for (Piece piece : DuoMap.game.pieces)
+	        		{
+	            		if (!piece.is_placed)
+	            			continue;
+	            		piece.lifetime_cooldown.tick();
+	            		if (!piece.is_active)
+	            		{
+	            			if (piece.players.size() > 0)
+	            			{
+	            				piece.is_active = true;
+	            				piece.lifetime_cooldown.cpt = MyMath.Max(piece_onactive_set_minlifetime, (int) piece.lifetime_cooldown.cpt);
+	            			}
+	            		}
+	            		int state = -1;
+	            		if (piece.lifetime_cooldown.cpt % ticks_piece_disappear_sound != 0)
+	            			continue;
+	            		int temp = piece.lifetime_cooldown.cpt / ticks_piece_disappear_sound;
+	            		if (temp == 20)
+	            			state = 0;
+	            		else if (temp == 16)
+	            			state = 1;
+	            		if (temp == 12 || temp == 10)
+	            			state = 2;
+	            		else if (temp == 8 || temp == 6)
+	            			state = 3;
+	            		else if (temp > 0 && temp < 5)
+	            			state = 4;
+	            		else if (piece.lifetime_cooldown.isReady())
+	            			state = 999;
+	            		if (state == 999)
+	            			to_delete.add(piece);
+	        			else if (state < 0)
+	        				continue;
+	        			else
+	        			{
+	        				piece.PlaySoundLocal(Sound.ENTITY_ARMOR_STAND_HIT, state);
+	        				piece.PlayCracks(DuoMap.dungeon_origin, state);
+	        			}
+	        		}
+	        		for (Piece piece : to_delete)
+	        			piece.Delete();
+	        		to_delete.clear();
+	        	}
+	        }
+	    }, 0, 1);
+	}
 
 	public TetrisShape shape;
 	public Index2d map_occupation00_first;
@@ -202,7 +260,7 @@ public class Piece extends Structure {
 	public void ResetPos()
 	{
 		this.map_occupation00 = map_occupation00_first;
-		map_occupation = map_occupation_first.clone();
+		SetMapOccupation(map_occupation_first.clone(), map_occupation00_first);
 		int old_rotation = rotation;
 		for (int i=0; i<MyMath.Mod(-old_rotation, 4); i+=1)
 			updateRotation(true);
@@ -213,7 +271,7 @@ public class Piece extends Structure {
 	public void Delete()
 	{
 		PlaySoundLocal(Sound.BLOCK_STONE_BREAK, 1);
-		DuoMap.pieces.remove(this);
+		DuoMap.game.pieces.remove(this);
 		for (DuoRunner runner : players)
 		{
 			runner.piece = null;
@@ -304,7 +362,8 @@ public class Piece extends Structure {
 			switch(rndRarity)
 			{
 			case COMMON:
-				break;
+				do_spawn_beacon = true;
+				mat = Material.WHITE_STAINED_GLASS;
 			case RARE:
 				do_spawn_beacon = true;
 				mat = Material.BLUE_STAINED_GLASS;
@@ -385,6 +444,16 @@ public class Piece extends Structure {
 		// play sound
 		PlaySound(Sound.BLOCK_WOOD_PLACE, 0);
 		
+		// decrease lifetime of other pieces
+		if (DuoMap.game.pieces.size() >= npieces_decrease_lifetime)
+		{
+			for (Piece p : DuoMap.game.pieces)
+			{
+				if (p != this)
+					p.lifetime_cooldown.tick(npieces_decrease_lifetime_by);
+			}
+		}
+		
 		is_placed = true;
 	}
 	
@@ -432,7 +501,7 @@ public class Piece extends Structure {
 				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_active");
 			else
 				volume = ConfigManager.DDConfig.getConfigurationSection("ambience").getDouble("volume_piece_near");
-			if (loc.distance(p.getLocation()) < tile_size*3)
+			if (loc.distance(p.getLocation()) < tile_size*4)
 			{
 				DuoDungeonPlugin.logg("Distance to sound:" + loc.distance(p.getLocation()) + " / volume: " + volume);
 				p.playSound(loc, s, (float) volume, pitch);

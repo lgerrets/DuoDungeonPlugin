@@ -14,9 +14,9 @@ public class Bomb extends Structure {
 
 	public Bomb(Index2d occupation)
 	{
-		map_occupation00 = occupation;
 		map_occupation = new Index2d[] {occupation};
 		n_tiles = 1;
+		SetMapOccupation(map_occupation, occupation);
 		clone_from = new Index2d[] {new Index2d(0,0) };
 		structure_type = StructureType.BOMB;
 		moving_sound = Sound.ENTITY_CREEPER_PRIMED;

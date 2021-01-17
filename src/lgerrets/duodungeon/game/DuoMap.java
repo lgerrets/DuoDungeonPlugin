@@ -2,18 +2,21 @@ package lgerrets.duodungeon.game;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 
@@ -35,8 +38,8 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 
 public class DuoMap {
 	// misc
-	static public ArrayList<Piece> pieces; // these arrays are static because we want to access them from bukkit runnables
-	static public ArrayList<Checkpoint> checkpoints; // these arrays are static because we want to access them from bukkit runnables
+	public ArrayList<Piece> pieces; // these arrays are static because we want to access them from bukkit runnables
+	public ArrayList<Checkpoint> checkpoints; // these arrays are static because we want to access them from bukkit runnables
 	private boolean is_running;
 	static public DuoMap game = new DuoMap(false);
 
@@ -53,10 +56,12 @@ public class DuoMap {
 	// game config
 	static public int piece_lifetime_active = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("piece_lifetime_active");
 	static public int struct_spawn_dist = ConfigManager.DDConfig.getConfigurationSection("Game").getInt("struct_spawn_dist");
-	static public int ticks_piece_disappear_sound = ConfigManager.DDConfig.getConfigurationSection("ambience").getInt("ticks_piece_disappear_sound");
 	
 	// game running stats
 	public int tier;
+	
+	// builder gameplay
+	static int builder_maxdx_from_controledstruct = ConfigManager.DDConfig.getConfigurationSection("Controls").getInt("builder_maxdx_from_controledstruct");
 	
 	// moving stuff
 	private StructureType moving_type; // can be PIECE or BOMB
@@ -66,6 +71,7 @@ public class DuoMap {
 	private Bomb moving_bomb = null;
 	
 	// maps
+	private BoundingBox bbox;
 	private StructureType[][] map;
 	private int[][] square5;
 	private boolean[][] already_decreased_tile_from_square5;
@@ -138,6 +144,9 @@ public class DuoMap {
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
 			}; //15*21*/
+			bbox = BoundingBox.of(Coords3d.Index2dToLocation(new Index2d(0,0), dungeon_origin),
+					Coords3d.Index2dToLocation(new Index2d(map.length+1,map[0].length+1), dungeon_origin).add(-1,max_height,-1));
+			DuoDungeonPlugin.logg(bbox);
 			checkpoints = new ArrayList<Checkpoint>();
 			for (int x=0; x<map.length; x+=1)
 			{
@@ -196,54 +205,6 @@ public class DuoMap {
 			SpawnNewStruct();
 			DuoBuilder.Reset();
 			DuoRunner.Reset();
-			
-	        Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {
-	            @Override
-	            public void run() {
-	            	if (DuoMap.game.IsRunning())
-	            	{
-	            		ArrayList<Piece> to_delete = new ArrayList<Piece>();
-	            		for (Piece piece : pieces)
-	            		{
-		            		if (!piece.is_placed)
-		            			continue;
-		            		piece.lifetime_cooldown.tick();
-		            		if (!piece.is_active)
-		            		{
-		            			if (piece.players.size() > 0)
-		            			{
-		            				piece.is_active = true;
-		            				piece.lifetime_cooldown.cpt = MyMath.Max(200, (int) piece.lifetime_cooldown.cpt);
-		            			}
-		            		}
-		            		if (!piece.is_active)
-		            			continue;
-		            		int state = -1;
-		            		if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*4)
-		            			state = 1;
-		            		else if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*3)
-		            			state = 2;
-		            		else if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*2)
-		            			state = 3;
-		            		else if (piece.lifetime_cooldown.cpt == ticks_piece_disappear_sound*1)
-		            			state = 4;
-		            		else if (piece.lifetime_cooldown.isReady())
-		            			state = 999;
-		            		if (state == 999)
-		            			to_delete.add(piece);
-		        			else if (state < 0) {}
-		        			else
-		        			{
-		        				piece.PlaySoundLocal(Sound.ENTITY_ARMOR_STAND_HIT, state);
-		        				piece.PlayCracks(dungeon_origin, state);
-		        			}
-	            		}
-	            		for (Piece piece : to_delete)
-	            			piece.Delete();
-	            		to_delete.clear();
-	            	}
-	            }
-	        }, 0, 1);
 		}
 	}
 	
@@ -315,6 +276,12 @@ public class DuoMap {
 	public void ClearArea()
 	{
 		DuoDungeonPlugin.shout("Clearing the dungeon. Expect some lag...");
+		Collection<Entity> entities = world.getNearbyEntities(bbox);
+		for (Entity ent : entities)
+		{
+			if (!(ent instanceof Player))
+				ent.remove();
+		}
 		CuboidRegion region;
 		BlockVector3 origin = Coords3d.Index2dToBlockVector3(new Index2d(0,0), dungeon_origin);
 		origin = origin.withY(Coords3d.FromWaypoint("builder").y-3);
@@ -379,6 +346,23 @@ public class DuoMap {
 	
 	public void TryMoveStruct(Direction d)
 	{
+		// don't do anything if the builder is too far from the structure
+		boolean cancel_move = false;
+		if (DuoTeam.builder_players.size() > 0) {
+			cancel_move = (MyMath.Abs(moving_struct.placed_pos.x - DuoTeam.builder_players.get(0).getDuoPlayer().getPlayer().getLocation().getX()) > 
+					builder_maxdx_from_controledstruct); // is too far
+			cancel_move = cancel_move || (MyMath.Abs(moving_struct.placed_pos.CalculateTranslation(tile_size, d).x - DuoTeam.builder_players.get(0).getDuoPlayer().getPlayer().getLocation().getX()) > 
+					builder_maxdx_from_controledstruct); // would go too far
+		}
+		if (cancel_move) {
+			for (DuoBuilder builder : DuoTeam.builder_players) {
+				Player p = builder.getDuoPlayer().getPlayer();
+				p.playSound(moving_struct.placed_pos.toLocation(world), Sound.ENTITY_BOAT_PADDLE_WATER, 20, 1);
+			}
+			return;
+		}
+		
+		// find the types of the tiles that are in the way (ie "blocking" tiles)
 		StructureType blocking = StructureType.FREE; // will be in order of priority: PEACEFUL, EMPTY, FREE
 		Index2d[] newcoords = new Index2d[moving_struct.map_occupation.length];
 		int idx = 0;
@@ -400,6 +384,7 @@ public class DuoMap {
 			idx += 1;
 		}
 		
+		// execute the consequences of the found "blocking" tiles
 		switch (this.moving_type)
 		{
 		case PIECE_UP:

@@ -33,21 +33,19 @@ module-info.java > "requires <paste>"
 ## Debug
 
 - NullPointerException on a static variable: could have meant interdependecy between class static variables, but actually I forgot to initialize a ```EnumMap<...> x **= new EnumMap<>(...)**```
+- "can't send chat message" occurs if the entity of the player was accidentally removed with a "entity.remove()"
 
 ## Bugs / Todos
 
 Bugs:
 - as runner, I can double click on gold ingot in my inventory to sneak pick gold in chest
 - parfois, une nouvelle piece ne spawn pas => loggé
-- on clear area, also clear entities (eg villagers)
 
 Todos:
 - life loss
 - mobs:
   - without helmet + fire resistance, to give runners fire on melee hit
   - no natural mob spawn
-  - random #mobs / piece
-  - customized health
   - mobs do not move until their piece is active ()
   - stop natural despawn?
 - have only one runnable per class, not per player runner!
@@ -57,26 +55,27 @@ Todos:
 - boots levitation use la durabilité
 - shop de départ / augmenter la rareté sur les premiers checkpoints (slay the spyre style)
 
-- despawn pieces après 10 pieces
 - cp dans le mauvais sens
-- disparaitre beacons coffres ouverts ou carrément disparaitre le coffre
-- beacon blanc pour les communs
-- accéler le countdown de piece despawn (5 ... 4 ... 3 .. 2 .. 1 . 0) + simplifier son (pas de condition de distance ...)
-- empecher la piece/bombe de sortir du champ de vision du builder
 - clear runner inv
 - descendre buider
-- mob interdits dans les cp
 - on mob creation mob.setRemoveWhenFarAway(false);
 
-commit
-- augmenter la hauteur max pour cp
-- marchands aux checkpoints
-- spawn mobs and merchants at center
-- play sound on piece placed
-- son quand la piece bouge
-- config params
-- sert hunger and saturation (huge for builder)
-- builder invisible
++ beacon blanc pour les communs
++ disparaitre beacons coffres ouverts ou carrément disparaitre le coffre
++ empecher la piece/bombe de sortir du champ de vision du builder
++ despawn pieces après 10 pieces
++ accéler le countdown de piece despawn (5 ... 4 ... 3 .. 2 .. 1 . 0)
++ mob interdits dans les cp
++ fix clear all entities in dungeon area but player
+
++ augmenter la hauteur max pour cp
++ marchands aux checkpoints
++ spawn mobs and merchants at center
++ play sound on piece placed
++ son quand la piece bouge
++ config params
++ sert hunger and saturation (huge for builder)
++ builder invisible
 
 + checkpoint obstacle des deux côtés
 + empecher de poser dans un coffre

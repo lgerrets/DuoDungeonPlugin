@@ -9,6 +9,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DuoMap;
+import lgerrets.duodungeon.utils.Index2d.Direction;
 
 public class Coords3d {
 	public int x; // x++ = go east
@@ -84,6 +85,19 @@ public class Coords3d {
 	public Coords3d scale(double m)
 	{
 		return new Coords3d(x*m, y*m, z*m);
+	}
+	
+	public Coords3d CalculateTranslation(int delta, Direction d)
+	{
+		int newx = x;
+		int newz = z;
+		if ((d == Direction.NORTH) || (d == Direction.WEST))
+			delta = -delta;
+		if ((d == Direction.NORTH) || (d == Direction.SOUTH))
+			newz += delta;
+		else
+			newx += delta;
+		return new Coords3d(newx, this.y, newz);
 	}
 	
 	public String toString()

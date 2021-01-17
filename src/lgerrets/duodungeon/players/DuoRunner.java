@@ -33,7 +33,7 @@ public class DuoRunner extends DuoTeammate {
         		Coords3d pos = new Coords3d(player.getDuoPlayer().getPlayer().getLocation());
         		if (player.piece != null && player.piece.HasCoords3d(pos))
         			return;
-    			for (Piece p : DuoMap.pieces)
+    			for (Piece p : DuoMap.game.pieces)
     			{
     				if (p.HasCoords3d(pos))
     				{
