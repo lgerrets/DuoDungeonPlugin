@@ -52,6 +52,12 @@ public class Coords3d {
 		this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
 	
+	public Index2d toIndex2d(Coords3d origin) {
+		int dx = this.x - origin.x;
+		int dz = this.z - origin.z;
+		return new Index2d((int) Math.floor(dx/tile_size), (int) Math.floor(dz/tile_size));
+	}
+	
 	public Location toLocation(World world)
 	{
 		return new Location(world, x, y, z);

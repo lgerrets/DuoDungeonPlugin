@@ -88,6 +88,7 @@ public class ConfigManager {
 		setDefaultIfNotSet(ambience, "volume_piece_near", 0.5);
 		setDefaultIfNotSet(ambience, "volume_piece_active", 1.0);
 		setDefaultIfNotSet(ambience, "ticks_piece_disappear_sound", 50);
+		setDefaultIfNotSet(ambience, "builder_tetris_grid_gui_dist", 10);
 		
 		if(do_save > 0)
 			saveMainConfig();

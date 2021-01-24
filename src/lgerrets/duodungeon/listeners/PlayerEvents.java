@@ -1,7 +1,13 @@
 package lgerrets.duodungeon.listeners;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -22,6 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DuoMap;
+import lgerrets.duodungeon.players.DuoBuilder;
 import lgerrets.duodungeon.players.DuoPlayer;
 import lgerrets.duodungeon.players.DuoTeam;
 import lgerrets.duodungeon.utils.Cooldown;
@@ -34,6 +41,11 @@ public class PlayerEvents implements Listener {
 	private Cooldown builder_act_cooldown;
 	private Cooldown builder_move_cooldown;
 	//private Cooldown builder_resetpos_cooldown;
+	static private Set<Material> transparents = new HashSet<Material>();
+	static {
+		transparents.add(Material.AIR);
+		transparents.add(Material.BARRIER);
+	}
 	
 	public PlayerEvents()
 	{
@@ -97,18 +109,33 @@ public class PlayerEvents implements Listener {
 	    		ItemStack items = p.getPlayer().getItemInHand();
 	    		if (items == null)
 	    			return;
-	    		if(items.getType() != Material.STONE_BUTTON)
-	    			return;
-	    		if (builder_act_cooldown.isReady())
+	    		if(items.getType() == Material.STONE_BUTTON)
+	    		{
+		    		if (builder_act_cooldown.isReady())
+		    		{
+		    			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+		    				DuoMap.game.SpawnNewStruct();
+		    			else if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
+			    			DuoMap.game.TryRotatePiece(true); // true stands for trigo orientation
+			    		else
+			    			return;
+			    		builder_act_cooldown.reset();
+		    		}
+	    		}
+	    		else if(items.getType() == Material.NETHER_STAR)
 	    		{
 	    			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
-	    				DuoMap.game.SpawnNewStruct();
-	    			else if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
-		    			DuoMap.game.TryRotatePiece(true); // true stands for trigo orientation
-		    		else
-		    			return;
-		    		builder_act_cooldown.reset();
+	    			{
+	    				Player player = p.getPlayer();
+	    				Block targetBlock = player.getTargetBlock(transparents, 200);
+	    				if (targetBlock.getType() != Material.AIR) // we are not aiming at void or out of range
+	    					DuoBuilder.UseThunder(targetBlock.getLocation());
+	    			}
+	    			else
+	    				return;
 	    		}
+	    		else
+	    			return;
 	    	}
     	}
     }

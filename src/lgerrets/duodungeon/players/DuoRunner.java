@@ -17,46 +17,40 @@ import lgerrets.duodungeon.utils.InvUtils;
 
 public class DuoRunner extends DuoTeammate {
 	
-	
-	private class TrackActivePiece implements Runnable {
-		DuoRunner player;
-		public TrackActivePiece(DuoRunner player)
-		{
-			super();
-			this.player = player;
-		}
-		
-        @Override
-        public void run() {
-        	if (DuoMap.game.IsRunning())
-        	{
-        		Coords3d pos = new Coords3d(player.getDuoPlayer().getPlayer().getLocation());
-        		if (player.piece != null && player.piece.HasCoords3d(pos))
-        			return;
-    			for (Piece p : DuoMap.game.pieces)
-    			{
-    				if (p.HasCoords3d(pos))
-    				{
-						if (player.piece != null)
-							player.piece.players.remove(player);
-						player.piece = p;
-						p.players.add(player);
-						break;
-    				}
-    			}
-        	}
-        }
+	static {
+	    Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new Runnable() {
+	        @Override
+	        public void run() {
+	        	if (DuoMap.game.IsRunning())
+	        	{
+	        		for (DuoRunner player : DuoTeam.runner_players) {
+		        		Coords3d pos = new Coords3d(player.getDuoPlayer().getPlayer().getLocation());
+		        		if (player.piece != null && player.piece.HasCoords3d(pos))
+		        			return;
+		    			for (Piece p : DuoMap.game.pieces)
+		    			{
+		    				if (p.HasCoords3d(pos))
+		    				{
+								if (player.piece != null)
+									player.piece.players.remove(player);
+								player.piece = p;
+								p.players.add(player);
+								break;
+		    				}
+		    			}
+	        		}
+	        	}
+	        }
+	    }, 0, 1);
 	}
 	
 	public Piece piece;
-	private int taskId;
 
 	public DuoRunner(DuoPlayer player) {
 		super(player);
 		piece = null;
 		type = DuoTeam.TeamType.RUNNER;
 		player.getPlayer().setGameMode(GameMode.ADVENTURE);
-		taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(DuoDungeonPlugin.getInstance(), new TrackActivePiece(this), 0, 1);
 		if(DuoMap.game.IsRunning())
 			this.ResetRunner();
 	}
@@ -80,7 +74,6 @@ public class DuoRunner extends DuoTeammate {
 		super.Unregister();
 		if (this.piece != null)
 			this.piece.players.remove(this);
-		Bukkit.getScheduler().cancelTask(taskId);
 	}
 	
 	static public void Reset()

@@ -71,6 +71,8 @@ public class DuoMap {
 	private Bomb moving_bomb = null;
 	
 	// maps
+	final public int XMax = 100;
+	final public int ZMax = 21;
 	private BoundingBox bbox;
 	private StructureType[][] map;
 	private int[][] square5;
@@ -125,7 +127,7 @@ public class DuoMap {
 		this.is_running = is_running;
 		if (is_running)
 		{
-			map = new StructureType[100][21];
+			map = new StructureType[XMax][ZMax];
 			/*{
 				{3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3},
 				{3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
@@ -145,20 +147,20 @@ public class DuoMap {
 				{3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
 			}; //15*21*/
 			bbox = BoundingBox.of(Coords3d.Index2dToLocation(new Index2d(0,0), dungeon_origin),
-					Coords3d.Index2dToLocation(new Index2d(map.length+1,map[0].length+1), dungeon_origin).add(-1,max_height,-1));
+					Coords3d.Index2dToLocation(new Index2d(XMax+1,ZMax+1), dungeon_origin).add(-1,max_height,-1));
 			DuoDungeonPlugin.logg(bbox);
 			checkpoints = new ArrayList<Checkpoint>();
-			for (int x=0; x<map.length; x+=1)
+			for (int x=0; x<XMax; x+=1)
 			{
 				StructureType type;
 				int z;
-				for (z=0; z<map[0].length; z+=1)
+				for (z=0; z<ZMax; z+=1)
 				{
-					if (z == 0 || z == map[0].length-1 || x == 0 || x == map.length-1)
+					if (z == 0 || z == ZMax-1 || x == 0 || x == XMax-1)
 						type = StructureType.BORDER;
 					else if (x == 1)
 						type = StructureType.START;
-					/*else if (x == map.length-2)
+					/*else if (x == XMax-2)
 						type = StructureType.CHECKPOINT;
 					else if (x == 7 && (z==1 || z==13))
 						type = StructureType.PEACEFUL;*/
@@ -168,34 +170,34 @@ public class DuoMap {
 				}
 			}
 			// place checkpoints (must be done before random asteroids because we want to surround (on z) checkpoints with PEACEFUL_INDESTRUCTIBLE_INVISIBLE (if there is no wall)
-			for (int x=0; x<map.length; x+=1)
+			for (int x=0; x<XMax; x+=1)
 			{
-				if (MyMath.Mod(x, ConfigManager.DDConfig.getConfigurationSection("Game").getInt("x_delta_checkpoints")) == 0 && x > 1 && x < map.length - 1)
+				if (MyMath.Mod(x, ConfigManager.DDConfig.getConfigurationSection("Game").getInt("x_delta_checkpoints")) == 0 && x > 1 && x < XMax - 1)
 				{
-					int z = MyMath.RandomUInt(map[0].length-5) + 1;
+					int z = MyMath.RandomUInt(ZMax-5) + 1;
 					Checkpoint checkpoint = new Checkpoint(new Index2d(x, z));
 					checkpoints.add(checkpoint);
 					checkpoint.InitialClone(pastebin, 0);
 				}
 			}
 			// place asteroids
-			for (int x=0; x<map.length; x+=1)
+			for (int x=0; x<XMax; x+=1)
 			{
-				if (MyMath.Mod(x, ConfigManager.DDConfig.getConfigurationSection("Game").getInt("x_delta_asteroids")) == 0 && x > 1 && x < map.length - 1)
+				if (MyMath.Mod(x, ConfigManager.DDConfig.getConfigurationSection("Game").getInt("x_delta_asteroids")) == 0 && x > 1 && x < XMax - 1)
 				{
 					int z = -1;
 					StructureType type = null;
 					while (this.GetMap(x, z, StructureType.BORDER) != StructureType.FREE)
 					{
-						z = MyMath.RandomUInt(map[0].length-3) + 1;
+						z = MyMath.RandomUInt(ZMax-3) + 1;
 						type = StructureType.PEACEFUL;
 					}
 					this.SetMap(x, z, type);
 				}
 			}
-			square5 = new int[map.length][map[0].length]; // java initializes all values to 0
-			already_decreased_tile_from_square5 = new boolean[map.length][map[0].length];
-			neighbour_pieces = new int[map.length][map[0].length];
+			square5 = new int[XMax][ZMax]; // java initializes all values to 0
+			already_decreased_tile_from_square5 = new boolean[XMax][ZMax];
+			neighbour_pieces = new int[XMax][ZMax];
 			pieces = new ArrayList<Piece>();
 			ClearArea();
 			moving_type = StructureType.PIECE_UP;
@@ -285,7 +287,7 @@ public class DuoMap {
 		CuboidRegion region;
 		BlockVector3 origin = Coords3d.Index2dToBlockVector3(new Index2d(0,0), dungeon_origin);
 		origin = origin.withY(Coords3d.FromWaypoint("builder").y-3);
-		region = new CuboidRegion(WEWorld,  origin, origin.add(map.length*tile_size, 0, map[0].length*tile_size));	
+		region = new CuboidRegion(WEWorld,  origin, origin.add(XMax*tile_size, 0, ZMax*tile_size));	
 		WEUtils.FillRegion(WEWorld, region, Material.BARRIER.createBlockData());
 		
 		BlockVector3 pos;
@@ -294,9 +296,9 @@ public class DuoMap {
 		BlockData mat = null;
 		boolean do_clear;
 		boolean do_fill;
-		for (int x=0 ; x<map.length ; x+=1)
+		for (int x=0 ; x<XMax ; x+=1)
 		{
-			for (int z=0 ; z<map[0].length ; z+=1)
+			for (int z=0 ; z<ZMax ; z+=1)
 			{
 				pos = Coords3d.Index2dToBlockVector3(new Index2d(x, z), dungeon_origin);
 				do_clear = false;
@@ -533,15 +535,15 @@ public class DuoMap {
 	
 	public boolean IsOutOfBounds(int x, int z)
 	{
-		return x < 0 || x >= map.length || z < 0 || z >= map[0].length;			
+		return x < 0 || x >= XMax || z < 0 || z >= ZMax;			
 	}
 	
 	public String toString()
 	{
 		String ret = "";
-		for (int x = map.length-1; x >= 0 ; x-=1)
+		for (int x = XMax-1; x >= 0 ; x-=1)
 		{
-			for (int z = 0 ; z < map[0].length ; z+=1)
+			for (int z = 0 ; z < ZMax ; z+=1)
 			{
 				ret += String.valueOf(this.GetMap(x,z, DuoMap.StructureType.EMPTY).getValue());
 			}
@@ -556,9 +558,9 @@ public class DuoMap {
 	public String Square5MapToString()
 	{
 		String ret = "";
-		for (int x = map.length-1; x >= 0 ; x-=1)
+		for (int x = XMax-1; x >= 0 ; x-=1)
 		{
-			for (int z = 0 ; z < map[0].length ; z+=1)
+			for (int z = 0 ; z < ZMax ; z+=1)
 			{
 				ret += String.valueOf(square5[x][z]);
 			}
