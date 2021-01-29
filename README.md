@@ -55,6 +55,10 @@ Todos:
 - boots levitation use la durabilité
 - shop de départ / augmenter la rareté sur les premiers checkpoints (slay the spyre style)
 
+- renommer items
+- fixer GUI
+- sons team
+
 - cp dans le mauvais sens
 - clear runner inv
 - descendre buider

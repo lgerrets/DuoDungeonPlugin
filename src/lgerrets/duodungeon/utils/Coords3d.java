@@ -83,6 +83,11 @@ public class Coords3d {
 		return this.add(o.x, o.y, o.z);
 	}
 	
+	public Coords3d diff(Coords3d o)
+	{
+		return this.add(- o.x, - o.y, - o.z);
+	}
+	
 	public Coords3d add(int X, int Y, int Z)
 	{
 		return new Coords3d(x+X, y+Y, z+Z);

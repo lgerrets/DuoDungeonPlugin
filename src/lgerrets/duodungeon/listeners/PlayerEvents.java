@@ -28,8 +28,10 @@ import org.bukkit.inventory.ItemStack;
 import lgerrets.duodungeon.ConfigManager;
 import lgerrets.duodungeon.DuoDungeonPlugin;
 import lgerrets.duodungeon.game.DuoMap;
+import lgerrets.duodungeon.game.Teleporter;
 import lgerrets.duodungeon.players.DuoBuilder;
 import lgerrets.duodungeon.players.DuoPlayer;
+import lgerrets.duodungeon.players.DuoRunner;
 import lgerrets.duodungeon.players.DuoTeam;
 import lgerrets.duodungeon.utils.Cooldown;
 import lgerrets.duodungeon.utils.Index2d;
@@ -129,7 +131,19 @@ public class PlayerEvents implements Listener {
 	    				Player player = p.getPlayer();
 	    				Block targetBlock = player.getTargetBlock(transparents, 200);
 	    				if (targetBlock.getType() != Material.AIR) // we are not aiming at void or out of range
-	    					DuoBuilder.UseThunder(targetBlock.getLocation());
+	    					DuoBuilder.GetBuilder(e.getPlayer()).UseThunder(targetBlock.getLocation());
+	    			}
+	    			else
+	    				return;
+	    		}
+	    		else if(items.getType() == Material.FLINT)
+	    		{
+	    			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+	    			{
+	    				Player player = p.getPlayer();
+	    				Block targetBlock = player.getTargetBlock(transparents, 200);
+	    				if (targetBlock.getType() != Material.AIR) // we are not aiming at void or out of range
+	    					DuoBuilder.GetBuilder(e.getPlayer()).TryPlaceTeleporter(targetBlock.getLocation());
 	    			}
 	    			else
 	    				return;
@@ -144,7 +158,8 @@ public class PlayerEvents implements Listener {
     public void onSneak(PlayerToggleSneakEvent e) {
     	if (DuoMap.game.IsRunning())
     	{
-	    	DuoPlayer p = DuoPlayer.getPlayer(e.getPlayer().getUniqueId());
+    		Player player = e.getPlayer();
+	    	DuoPlayer p = DuoPlayer.getPlayer(player.getUniqueId());
 	    	if (p == null) {
 	    		DuoDungeonPlugin.logg("Player is null");
 	    		return;
@@ -155,6 +170,13 @@ public class PlayerEvents implements Listener {
 	    		{
 	    			DuoMap.game.EnableNextIsBomb();
 	    			e.setCancelled(true);
+	    		}
+	    	}
+	    	else if (p.getTeam().teamType == DuoTeam.TeamType.RUNNER)
+	    	{
+	    		if (e.isSneaking());
+	    		{
+	    			Teleporter.TryTeleport(DuoRunner.GetRunner(player));
 	    		}
 	    	}
     	}

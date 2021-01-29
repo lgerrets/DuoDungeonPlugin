@@ -1,5 +1,7 @@
 package lgerrets.duodungeon.utils;
 
+import lgerrets.duodungeon.game.DuoMap;
+
 public class Index2d {
 	
 	public enum Direction
@@ -23,6 +25,14 @@ public class Index2d {
 	{
 		x = X;
 		z = Z;
+	}
+	
+	public Index2d(Coords3d origin, Coords3d coords)
+	{
+		int dx = coords.x - origin.x;
+		int dz = coords.z - origin.z;
+		x = dx/DuoMap.tile_size;
+		z = dz/DuoMap.tile_size;
 	}
 	
 	public Index2d CalculateTranslation(int delta, Direction d)
@@ -88,5 +98,10 @@ public class Index2d {
 
 	public Index2d add(int x, int z) {
 		return new Index2d(this.x + x, this.z + z);
+	}
+	
+	public boolean equals(Index2d idx)
+	{
+		return this.x == idx.x && this.z == idx.z;
 	}
 }

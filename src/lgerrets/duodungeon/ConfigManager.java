@@ -76,6 +76,7 @@ public class ConfigManager {
 		setDefaultWaypointIfNotSet(waypoints, "bomb");
 		setDefaultWaypointIfNotSet(waypoints, "obstacle");
 		setDefaultWaypointIfNotSet(waypoints, "checkpoint");
+		setDefaultWaypointIfNotSet(waypoints, "teleporter");
 		setDefaultWaypointIfNotSet(waypoints, "builder");
 		setDefaultWaypointIfNotSet(waypoints, "runner");
 		

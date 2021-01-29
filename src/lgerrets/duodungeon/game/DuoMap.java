@@ -37,15 +37,18 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 
 public class DuoMap {
+	// structures
+	public ArrayList<Piece> pieces;
+	public ArrayList<Checkpoint> checkpoints;
+	public ArrayList<Teleporter> teleporters;
+	
 	// misc
-	public ArrayList<Piece> pieces; // these arrays are static because we want to access them from bukkit runnables
-	public ArrayList<Checkpoint> checkpoints; // these arrays are static because we want to access them from bukkit runnables
 	private boolean is_running;
 	static public DuoMap game = new DuoMap(false);
 
 	// building stuff
 	static public Coords3d dungeon_origin;
-	static private Coords3d pastebin;
+	static public Coords3d pastebin;
 	static public int tile_size = ConfigManager.DDConfig.getInt("tile_size");
 	static public int floor_level = ConfigManager.DDConfig.getInt("floor_level");
 	static public int max_height = ConfigManager.DDConfig.getInt("max_height");
@@ -113,7 +116,8 @@ public class DuoMap {
 	    HOSTILE(6),
 	    PEACEFUL(7),
 	    PIECE_UP(8),
-	    PEACEFUL_INDESTRUCTIBLE_INVISIBLE(9)
+	    PEACEFUL_INDESTRUCTIBLE_INVISIBLE(9),
+	    TELEPORTER(10),
 	    ;
 
 	    private final int id;
@@ -150,6 +154,7 @@ public class DuoMap {
 					Coords3d.Index2dToLocation(new Index2d(XMax+1,ZMax+1), dungeon_origin).add(-1,max_height,-1));
 			DuoDungeonPlugin.logg(bbox);
 			checkpoints = new ArrayList<Checkpoint>();
+			teleporters = new ArrayList<Teleporter>();
 			for (int x=0; x<XMax; x+=1)
 			{
 				StructureType type;

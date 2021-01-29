@@ -83,4 +83,18 @@ public class DuoRunner extends DuoTeammate {
 			runner.ResetRunner();
 		}
 	}
+	
+	static public DuoRunner GetRunner(Player p)
+	{
+		DuoRunner runner = null;
+		for (DuoRunner r : DuoTeam.runner_players)
+		{
+			if (r.getDuoPlayer().getPlayer() == p)
+			{
+				runner = r;
+				break;
+			}
+		}
+		return runner;
+	}
 }
