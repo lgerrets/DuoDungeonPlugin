@@ -67,27 +67,35 @@ public class DuoBuilder extends DuoTeammate {
 	        			double thales_ratio = ((double) builder_tetris_grid_gui_dist) / ((double) coords_player.getY() - (double) reference_point.y);
 	        			int range = 8;
 	        			int granularity = 1; // DuoMap.tile_size;
-	        			for (int idx=MyMath.Max(0, id2_player.x-range); idx<=MyMath.Min(DuoMap.game.XMax-1, id2_player.x+range); idx+=1)
+	        			int idx_max = MyMath.Min(DuoMap.game.XMax-1, id2_player.x+range);
+	        			int idz_max = MyMath.Min(DuoMap.game.ZMax-1, id2_player.z+range);
+	        			for (int idx=MyMath.Max(0, id2_player.x-range); idx<=idx_max; idx+=1)
 	        			{
-	        				for (int idz=MyMath.Max(0, id2_player.z-range); idz<=MyMath.Min(DuoMap.game.ZMax-1, id2_player.z+range); idz+=1)
+	        				for (int idz=MyMath.Max(0, id2_player.z-range); idz<=idz_max; idz+=1)
 	        				{
 	        					tile_origin = Coords3d.Index2dToCoords3d(new Index2d(idx, idz), reference_point);
 	    						tile_x = tile_origin.x;
 	    						tile_z = tile_origin.z;
 	    						
-	    						x = thales_ratio*(tile_x - (double) coords_player.getX()) + coords_player.getX();
-	        					for (double dz=0 ; dz < DuoMap.tile_size ; dz+=granularity)
-	        					{
-		    						z = thales_ratio*(tile_z + dz - (double) coords_player.getZ()) + coords_player.getZ();
-	    							p.spawnParticle(Particle.VILLAGER_HAPPY, x, y, z, 1);
-	        					}
+	    						if (idz < idz_max)
+	    						{
+		    						x = thales_ratio*(tile_x - (double) coords_player.getX()) + coords_player.getX();
+		        					for (double dz=0 ; dz < DuoMap.tile_size ; dz+=granularity)
+		        					{
+			    						z = thales_ratio*(tile_z + dz - (double) coords_player.getZ()) + coords_player.getZ();
+		    							p.spawnParticle(Particle.VILLAGER_HAPPY, x, y, z, 1);
+		        					}
+	    						}
 	        					
-	        					z = thales_ratio*(tile_z - (double) coords_player.getZ()) + coords_player.getZ();
-	        					for (double dx=0 ; dx < DuoMap.tile_size ; dx+=granularity)
-	        					{
-		    						x = thales_ratio*(tile_x + dx - (double) coords_player.getX()) + coords_player.getX();
-	    							p.spawnParticle(Particle.VILLAGER_HAPPY, x, y, z, 1);
-	        					}
+	    						if (idx < idx_max)
+	    						{
+		        					z = thales_ratio*(tile_z - (double) coords_player.getZ()) + coords_player.getZ();
+		        					for (double dx=0 ; dx < DuoMap.tile_size ; dx+=granularity)
+		        					{
+			    						x = thales_ratio*(tile_x + dx - (double) coords_player.getX()) + coords_player.getX();
+		    							p.spawnParticle(Particle.VILLAGER_HAPPY, x, y, z, 1);
+		        					}
+	    						}
 	        				}
 	        			}
 	        		}
@@ -99,6 +107,7 @@ public class DuoBuilder extends DuoTeammate {
 	public DuoBuilder(DuoPlayer player) {
 		super(player);
 		type = DuoTeam.TeamType.BUILDER;
+		player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 1.f, 2.f);
 		if(DuoMap.game.IsRunning())
 			this.ResetBuilder();
 	}
@@ -134,14 +143,31 @@ public class DuoBuilder extends DuoTeammate {
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.NETHER_STAR);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.FLINT);
 		p.setGameMode(GameMode.SURVIVAL);
-		ItemStack buttons = new ItemStack(Material.STONE_BUTTON);
-		ItemMeta meta = buttons.getItemMeta();
-		meta.setDisplayName("TETRIS");
-		buttons.setItemMeta(meta);
-		InvUtils.addItems(p, 64, buttons);
-		InvUtils.addItems(p, 3, Material.TNT);
-		InvUtils.addItems(p, 3, Material.NETHER_STAR);
-		InvUtils.addItems(p, 1, Material.FLINT);
+		
+		ItemStack items = new ItemStack(Material.STONE_BUTTON);
+		ItemMeta meta = items.getItemMeta();
+		meta.setDisplayName("TETRIS (left/right click)");
+		items.setItemMeta(meta);
+		InvUtils.addItems(p, 64, items);
+		
+		items = new ItemStack(Material.TNT);
+		meta = items.getItemMeta();
+		meta.setDisplayName("BOMB (left click)");
+		items.setItemMeta(meta);
+		InvUtils.addItems(p, 3, items);
+		
+		items = new ItemStack(Material.NETHER_STAR);
+		meta = items.getItemMeta();
+		meta.setDisplayName("LIGHTNING (left click)");
+		items.setItemMeta(meta);
+		InvUtils.addItems(p, 3, items);
+		
+		items = new ItemStack(Material.FLINT);
+		meta = items.getItemMeta();
+		meta.setDisplayName("TELEPORTER (left click)");
+		items.setItemMeta(meta);
+		InvUtils.addItems(p, 1, items);
+		
 		combo = 0.0;
 		goldCpt = 0.0;
 		Coords3d coords = Coords3d.FromWaypoint("builder");
@@ -195,6 +221,18 @@ public class DuoBuilder extends DuoTeammate {
 	
 	public void UseThunder(Location loc)
 	{
+		Coords3d coords = new Coords3d(loc);
+		boolean on_piece = false;
+		for (Piece piece : DuoMap.game.pieces)
+		{
+			if (piece.HasCoords3d(coords))
+			{
+				on_piece = piece.is_placed;
+				break;
+			}
+		}
+		if (!on_piece)
+			return;
 		int delta = InvUtils.ChangeItemNb(this.getDuoPlayer().getPlayer(), -1, Material.NETHER_STAR);
 		if (delta < 0)
 		{

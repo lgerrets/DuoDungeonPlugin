@@ -1,5 +1,6 @@
 package lgerrets.duodungeon.players;
 
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
@@ -15,6 +16,7 @@ public class DuoTeammate {
 	
 	public void ResetTeammate()
 	{
+		player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_BANJO, 1.f, 1.f);
 		Player p = player.getPlayer();
 		p.setHealth(player.getPlayer().getMaxHealth());
 		for(PotionEffect effect : p.getActivePotionEffects())

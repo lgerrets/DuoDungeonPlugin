@@ -55,14 +55,15 @@ Todos:
 - boots levitation use la durabilité
 - shop de départ / augmenter la rareté sur les premiers checkpoints (slay the spyre style)
 
-- renommer items
-- fixer GUI
-- sons team
-
 - cp dans le mauvais sens
 - clear runner inv
 - descendre buider
 - on mob creation mob.setRemoveWhenFarAway(false);
+
++ renommer builder items
++ fixer GUI bords
++ sons set team
++ lightning on placed pieces
 
 + beacon blanc pour les communs
 + disparaitre beacons coffres ouverts ou carrément disparaitre le coffre

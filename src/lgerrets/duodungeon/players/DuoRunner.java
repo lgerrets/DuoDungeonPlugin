@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -50,13 +51,14 @@ public class DuoRunner extends DuoTeammate {
 		super(player);
 		piece = null;
 		type = DuoTeam.TeamType.RUNNER;
-		player.getPlayer().setGameMode(GameMode.ADVENTURE);
+		player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1.f, 2.f);
 		if(DuoMap.game.IsRunning())
 			this.ResetRunner();
 	}
 	
 	public void ResetRunner()
 	{
+		player.getPlayer().setGameMode(GameMode.ADVENTURE);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.TNT);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.GOLD_NUGGET);
 		InvUtils.ChangeItemNb(getDuoPlayer().getPlayer(), -999, Material.ARROW);

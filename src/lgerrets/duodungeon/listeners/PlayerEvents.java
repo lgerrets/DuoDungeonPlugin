@@ -124,6 +124,13 @@ public class PlayerEvents implements Listener {
 			    		builder_act_cooldown.reset();
 		    		}
 	    		}
+	    		else if(items.getType() == Material.TNT)
+	    		{
+	    			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+	    				DuoMap.game.EnableNextIsBomb();
+	    			else
+	    				return;
+	    		}
 	    		else if(items.getType() == Material.NETHER_STAR)
 	    		{
 	    			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
@@ -164,15 +171,7 @@ public class PlayerEvents implements Listener {
 	    		DuoDungeonPlugin.logg("Player is null");
 	    		return;
 	    	}
-	    	if (p.getTeam().teamType == DuoTeam.TeamType.BUILDER)
-	    	{
-	    		if (e.isSneaking())
-	    		{
-	    			DuoMap.game.EnableNextIsBomb();
-	    			e.setCancelled(true);
-	    		}
-	    	}
-	    	else if (p.getTeam().teamType == DuoTeam.TeamType.RUNNER)
+    		if (p.getTeam().teamType == DuoTeam.TeamType.RUNNER)
 	    	{
 	    		if (e.isSneaking());
 	    		{

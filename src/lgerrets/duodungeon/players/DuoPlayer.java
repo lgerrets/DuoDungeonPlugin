@@ -155,6 +155,10 @@ public class DuoPlayer
 		{
 			DuoTeam.runner_players.add(new DuoRunner(this));
 		}
+		else
+		{
+			DuoTeam.none_players.add(new DuoNoteamer(this));
+		}
 		this.team = t;
 		
 		String playerName = this.name;
